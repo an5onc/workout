@@ -39,7 +39,7 @@ enum GroceryListGenerator {
         return GroceryCategory.allCases.compactMap { category in
             let items = merged.values
                 .filter { $0.category == category }
-                .sorted { $0.name < $1.name }
+                .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
             return items.isEmpty ? nil : GrocerySection(category: category, items: items)
         }
     }
