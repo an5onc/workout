@@ -3,17 +3,34 @@ import SwiftUI
 struct ExerciseCardView: View {
     let exercise: Exercise
     @Binding var isExpanded: Bool
-    @Bindable var state: LocalAppState
+    let state: LocalAppState
+
+    private let setColumns = [
+        GridItem(.adaptive(minimum: 96), spacing: 8)
+    ]
 
     var body: some View {
+        let completedSets = state.progress(for: exercise.id).completedSets
+
         DisclosureGroup(isExpanded: $isExpanded) {
             VStack(alignment: .leading, spacing: 12) {
-                HStack {
+                LazyVGrid(columns: setColumns, alignment: .leading, spacing: 8) {
                     ForEach(0..<exercise.sets, id: \.self) { setIndex in
-                        Button("Set \(setIndex + 1)") {
+                        let isCompleted = completedSets.contains(setIndex)
+
+                        Button {
                             state.toggleSet(exerciseID: exercise.id, setIndex: setIndex)
+                        } label: {
+                            Text(isCompleted ? "✓ Set \(setIndex + 1)" : "Set \(setIndex + 1)")
+                                .font(.subheadline.weight(.semibold))
+                                .frame(maxWidth: .infinity, minHeight: 44)
                         }
-                        .buttonStyle(.borderedProminent)
+                        .foregroundStyle(isCompleted ? .white : AppTheme.accent)
+                        .background(isCompleted ? AppTheme.accent : AppTheme.accentSoft)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .accessibilityLabel("Set \(setIndex + 1)")
+                        .accessibilityValue(isCompleted ? "Completed" : "Not completed")
+                        .accessibilityHint("Toggles set completion")
                     }
                 }
 

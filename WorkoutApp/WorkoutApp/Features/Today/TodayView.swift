@@ -4,6 +4,7 @@ struct TodayView: View {
     @Bindable var state: LocalAppState
     @State private var manuallyExpandedExerciseIDs: Set<String> = []
     @State private var manuallyCollapsedExerciseIDs: Set<String> = []
+    @State private var lastActiveExerciseID: String?
     private let planner = WorkoutPlanner(schedule: ProgramSeed.weeklySchedule)
 
     var body: some View {
@@ -17,12 +18,20 @@ struct TodayView: View {
                         restCard(for: workout)
                     } else {
                         let active = planner.activeExercise(in: workout, progress: state.setProgress)
-                        ForEach(workout.exercises) { exercise in
-                            ExerciseCardView(
-                                exercise: exercise,
-                                isExpanded: expansionBinding(for: exercise, activeExerciseID: active?.id),
-                                state: state
-                            )
+                        Group {
+                            ForEach(workout.exercises) { exercise in
+                                ExerciseCardView(
+                                    exercise: exercise,
+                                    isExpanded: expansionBinding(for: exercise, activeExerciseID: active?.id),
+                                    state: state
+                                )
+                            }
+                        }
+                        .onAppear {
+                            updateActiveExercise(active?.id)
+                        }
+                        .onChange(of: active?.id) { _, newActiveExerciseID in
+                            updateActiveExercise(newActiveExerciseID)
                         }
                     }
                 }
@@ -75,6 +84,14 @@ struct TodayView: View {
                 manuallyExpandedExerciseIDs.remove(exercise.id)
                 manuallyCollapsedExerciseIDs.insert(exercise.id)
             }
+        }
+    }
+
+    private func updateActiveExercise(_ activeExerciseID: String?) {
+        guard activeExerciseID != lastActiveExerciseID else { return }
+        lastActiveExerciseID = activeExerciseID
+        if let activeExerciseID {
+            manuallyCollapsedExerciseIDs.remove(activeExerciseID)
         }
     }
 
