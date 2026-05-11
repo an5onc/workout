@@ -17,6 +17,19 @@ final class WorkoutAppScaffoldTests: XCTestCase {
         XCTAssertTrue(rootTabView.contains("GroceryView(state: state)"))
     }
 
+    func testLocalAppStateDoesNotExposeLegacyTopLevelQuickProteinAdds() throws {
+        let localAppState = try String(contentsOfFile: sourcePath("WorkoutApp/Store/LocalAppState.swift"))
+
+        XCTAssertFalse(localAppState.contains("var quickProteinAdds: [Int] { didSet { save() } }"))
+    }
+
+    func testFoodViewDerivesCurrentDateInsteadOfStoringTodayState() throws {
+        let foodView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Food/FoodView.swift"))
+
+        XCTAssertFalse(foodView.contains("@State private var today = Date()"))
+        XCTAssertTrue(foodView.contains("let currentDate: () -> Date"))
+    }
+
     private func sourcePath(_ path: String) -> String {
         URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

@@ -31,6 +31,12 @@ struct NutritionTargets: Hashable, Codable {
     let waterOunces: Int
 }
 
+struct QuickProteinAnchor: Identifiable, Hashable, Codable {
+    let id: String
+    let label: String
+    let proteinGrams: Int
+}
+
 struct Exercise: Identifiable, Hashable, Codable {
     let id: String
     let name: String

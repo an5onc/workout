@@ -9,7 +9,7 @@ final class LocalAppState {
         var setProgress: [SetProgress]
         var selectedMealIDs: Set<String>
         var checkedGroceryItemIDs: Set<String>
-        var quickProteinAdds: [Int]
+        var quickProteinAdds: [Int]?
         var foodLogs: [FoodLog]?
     }
 
@@ -21,7 +21,6 @@ final class LocalAppState {
     var setProgress: [SetProgress] { didSet { save() } }
     var selectedMealIDs: Set<String> { didSet { save() } }
     var checkedGroceryItemIDs: Set<String> { didSet { save() } }
-    var quickProteinAdds: [Int] { didSet { save() } }
     var foodLogs: [FoodLog] { didSet { save() } }
 
     init(defaults: UserDefaults = .standard) {
@@ -30,7 +29,6 @@ final class LocalAppState {
         self.setProgress = []
         self.selectedMealIDs = []
         self.checkedGroceryItemIDs = []
-        self.quickProteinAdds = []
         self.foodLogs = []
         restore()
     }
@@ -109,7 +107,6 @@ final class LocalAppState {
         setProgress = snapshot.setProgress
         selectedMealIDs = snapshot.selectedMealIDs
         checkedGroceryItemIDs = snapshot.checkedGroceryItemIDs
-        quickProteinAdds = snapshot.quickProteinAdds
         foodLogs = snapshot.foodLogs ?? []
     }
 
@@ -121,7 +118,7 @@ final class LocalAppState {
             setProgress: setProgress,
             selectedMealIDs: selectedMealIDs,
             checkedGroceryItemIDs: checkedGroceryItemIDs,
-            quickProteinAdds: quickProteinAdds,
+            quickProteinAdds: nil,
             foodLogs: foodLogs
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }

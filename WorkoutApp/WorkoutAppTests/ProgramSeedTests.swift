@@ -54,4 +54,19 @@ final class ProgramSeedTests: XCTestCase {
         XCTAssertEqual(chicken.category, .meatSeafood)
         XCTAssertEqual(chicken.quantity, "5 oz")
     }
+
+    func testQuickProteinAnchorsIncludePlanItemsWithLabelsAndGrams() {
+        let anchorsByID = Dictionary(uniqueKeysWithValues: ProgramSeed.quickProteinAnchors.map { ($0.id, $0) })
+
+        XCTAssertEqual(anchorsByID["whey"]?.label, "Whey")
+        XCTAssertEqual(anchorsByID["whey"]?.proteinGrams, 25)
+        XCTAssertEqual(anchorsByID["greek-yogurt"]?.label, "Greek yogurt")
+        XCTAssertEqual(anchorsByID["greek-yogurt"]?.proteinGrams, 20)
+        XCTAssertEqual(anchorsByID["chicken"]?.label, "Chicken")
+        XCTAssertEqual(anchorsByID["chicken"]?.proteinGrams, 30)
+        XCTAssertEqual(anchorsByID["eggs"]?.label, "Eggs")
+        XCTAssertEqual(anchorsByID["eggs"]?.proteinGrams, 12)
+        XCTAssertEqual(anchorsByID["tuna"]?.label, "Tuna")
+        XCTAssertEqual(anchorsByID["tuna"]?.proteinGrams, 25)
+    }
 }

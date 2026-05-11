@@ -3,6 +3,14 @@ import Foundation
 enum ProgramSeed {
     static let nutritionTargets = NutritionTargets(calories: 1600, proteinGrams: 145, fatGrams: 50, carbsGrams: 145, waterOunces: 100)
 
+    static let quickProteinAnchors: [QuickProteinAnchor] = [
+        QuickProteinAnchor(id: "whey", label: "Whey", proteinGrams: 25),
+        QuickProteinAnchor(id: "greek-yogurt", label: "Greek yogurt", proteinGrams: 20),
+        QuickProteinAnchor(id: "chicken", label: "Chicken", proteinGrams: 30),
+        QuickProteinAnchor(id: "eggs", label: "Eggs", proteinGrams: 12),
+        QuickProteinAnchor(id: "tuna", label: "Tuna", proteinGrams: 25)
+    ]
+
     static let weeklySchedule: [WorkoutDay] = [
         WorkoutDay(id: .sunday, name: "Rest day + meal prep", focus: "Rest", subtitle: "Full rest. Sunday meal prep day.", isRestDay: true, exercises: []),
         WorkoutDay(id: .monday, name: "Lower A", focus: "Glute + Quad", subtitle: "Compound glute-builder, then quad-dominant work.", isRestDay: false, exercises: [

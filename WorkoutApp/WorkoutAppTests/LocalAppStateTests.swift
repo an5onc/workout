@@ -29,7 +29,6 @@ final class LocalAppStateTests: XCTestCase {
         ]
         state.selectedMealIDs = ["breakfast-a", "dinner-b"]
         state.checkedGroceryItemIDs = ["eggs", "rice"]
-        state.quickProteinAdds = [25, 40]
         state.foodLogs = [
             FoodLog(dateKey: "2026-05-11", checkedMealIDs: ["protein-oatmeal"], quickProteinAdds: [10, 25])
         ]
@@ -40,7 +39,6 @@ final class LocalAppStateTests: XCTestCase {
         XCTAssertEqual(restored.setProgress, state.setProgress)
         XCTAssertEqual(restored.selectedMealIDs, ["breakfast-a", "dinner-b"])
         XCTAssertEqual(restored.checkedGroceryItemIDs, ["eggs", "rice"])
-        XCTAssertEqual(restored.quickProteinAdds, [25, 40])
         XCTAssertEqual(restored.foodLogs, state.foodLogs)
     }
 
@@ -121,13 +119,23 @@ final class LocalAppStateTests: XCTestCase {
         XCTAssertEqual(restored.foodLog(for: yesterday).quickProteinAdds, [30])
     }
 
+    func testSavedSnapshotDoesNotRoundTripLegacyTopLevelQuickProteinAdds() throws {
+        let state = LocalAppState(defaults: defaults)
+        state.selectedDayOverride = .monday
+
+        let data = try XCTUnwrap(defaults.data(forKey: storageKey))
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        XCTAssertNil(json["quickProteinAdds"])
+    }
+
     func testRestoreDoesNotRewriteSnapshotDuringInit() throws {
         let state = LocalAppState(defaults: defaults)
         state.selectedDayOverride = .saturday
         state.setProgress = [SetProgress(exerciseID: "split-squat", completedSets: [0, 1])]
         state.selectedMealIDs = ["meal-1"]
         state.checkedGroceryItemIDs = ["spinach"]
-        state.quickProteinAdds = [30]
+        state.addQuickProtein(30, date: date(year: 2026, month: 5, day: 11))
 
         let originalData = try XCTUnwrap(defaults.data(forKey: storageKey))
         let recordingDefaults = try XCTUnwrap(RecordingUserDefaults(suiteName: suiteName))

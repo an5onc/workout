@@ -2,7 +2,16 @@ import SwiftUI
 
 struct FoodView: View {
     let state: LocalAppState
-    @State private var today = Date()
+    let currentDate: () -> Date
+
+    init(state: LocalAppState, currentDate: @escaping () -> Date = Date.init) {
+        self.state = state
+        self.currentDate = currentDate
+    }
+
+    private var today: Date {
+        currentDate()
+    }
 
     private var todaysLog: FoodLog {
         state.foodLog(for: today)
@@ -69,12 +78,21 @@ struct FoodView: View {
 
     private var quickProteinSection: some View {
         Section("Quick protein") {
-            HStack {
-                ForEach([10, 20, 25], id: \.self) { grams in
-                    Button("+\(grams)g") {
-                        state.addQuickProtein(grams, date: today)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack {
+                    ForEach(ProgramSeed.quickProteinAnchors) { anchor in
+                        Button {
+                            state.addQuickProtein(anchor.proteinGrams, date: currentDate())
+                        } label: {
+                            VStack(spacing: 2) {
+                                Text(anchor.label)
+                                Text("+\(anchor.proteinGrams)g")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .buttonStyle(.bordered)
                     }
-                    .buttonStyle(.bordered)
                 }
             }
             .padding(.vertical, 4)
@@ -86,11 +104,11 @@ struct FoodView: View {
                 LabeledContent("Quick add total", value: "\(quickProteinTotal)g")
 
                 Button("Remove last quick add") {
-                    state.removeLastQuickProteinAdd(date: today)
+                    state.removeLastQuickProteinAdd(date: currentDate())
                 }
 
                 Button("Clear quick adds", role: .destructive) {
-                    state.clearQuickProteinAdds(date: today)
+                    state.clearQuickProteinAdds(date: currentDate())
                 }
             }
         }
@@ -161,9 +179,9 @@ struct FoodView: View {
 
     private func foodMealBinding(for meal: MealTemplate) -> Binding<Bool> {
         Binding {
-            state.foodLog(for: today).checkedMealIDs.contains(meal.id)
+            state.foodLog(for: currentDate()).checkedMealIDs.contains(meal.id)
         } set: { isSelected in
-            state.toggleFoodMeal(meal.id, on: isSelected, date: today)
+            state.toggleFoodMeal(meal.id, on: isSelected, date: currentDate())
         }
     }
 
