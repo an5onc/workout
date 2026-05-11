@@ -15,4 +15,9 @@ final class ProteinTrackerTests: XCTestCase {
         XCTAssertEqual(ProteinTracker.progress(total: 200, target: 145), 1.0)
         XCTAssertEqual(ProteinTracker.progress(total: 72, target: 144), 0.5)
     }
+
+    func testProteinProgressReturnsZeroForInvalidTargets() {
+        XCTAssertEqual(ProteinTracker.progress(total: 72, target: 0), 0)
+        XCTAssertEqual(ProteinTracker.progress(total: 72, target: -10), 0)
+    }
 }
