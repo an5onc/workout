@@ -14,7 +14,7 @@ struct RootTabView: View {
             GroceryView(state: state)
                 .tabItem { Label("Grocery", systemImage: "cart") }
 
-            Text("Plan")
+            PlanView()
                 .tabItem { Label("Plan", systemImage: "book") }
         }
         .tint(AppTheme.accent)
