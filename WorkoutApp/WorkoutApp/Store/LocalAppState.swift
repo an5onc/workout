@@ -1,8 +1,8 @@
 import Foundation
 import Observation
-import SwiftUI
 
 @Observable
+@MainActor
 final class LocalAppState {
     private struct Snapshot: Codable {
         var selectedDayOverride: Weekday?
@@ -14,6 +14,7 @@ final class LocalAppState {
 
     private let defaults: UserDefaults
     private let storageKey = "workout.localAppState.v1"
+    private var isRestoring = false
 
     var selectedDayOverride: Weekday? { didSet { save() } }
     var setProgress: [SetProgress] { didSet { save() } }
@@ -60,6 +61,9 @@ final class LocalAppState {
               let snapshot = try? JSONDecoder().decode(Snapshot.self, from: data) else {
             return
         }
+        isRestoring = true
+        defer { isRestoring = false }
+
         selectedDayOverride = snapshot.selectedDayOverride
         setProgress = snapshot.setProgress
         selectedMealIDs = snapshot.selectedMealIDs
@@ -68,6 +72,8 @@ final class LocalAppState {
     }
 
     private func save() {
+        guard !isRestoring else { return }
+
         let snapshot = Snapshot(
             selectedDayOverride: selectedDayOverride,
             setProgress: setProgress,

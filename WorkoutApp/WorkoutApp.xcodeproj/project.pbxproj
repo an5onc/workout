@@ -13,6 +13,7 @@
 		477B83E0FA8B462A02D6B27D /* WorkoutApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E683E77D158F57A447DF81 /* WorkoutApp.swift */; };
 		49A84B76558B7D52B9C5475C /* ProgramSeedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523DE3D6E15F8272C81C43DF /* ProgramSeedTests.swift */; };
 		4EC9D87235A096DAF093D038 /* ProteinTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D76A85E7479E2DAD686A07 /* ProteinTracker.swift */; };
+		5AB22167B87D77918420D47D /* LocalAppStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5D30D72C8473D1C78A1D097 /* LocalAppStateTests.swift */; };
 		6074CA527906301CCF2DBA49 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28E37477937D37BFD762CD8 /* RootTabView.swift */; };
 		676A9F3382FC35440B80B462 /* ProgramModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0749F37722C2D657C343DDB3 /* ProgramModels.swift */; };
 		7EB4AF421E1360082FCCC805 /* WorkoutAppScaffoldTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F93BE1D12C0C4BD1F6CFBE6 /* WorkoutAppScaffoldTests.swift */; };
@@ -49,6 +50,7 @@
 		523DE3D6E15F8272C81C43DF /* ProgramSeedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramSeedTests.swift; sourceTree = "<group>"; };
 		59D9874F60BE35004930E655 /* WorkoutAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = WorkoutAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9B191CBCF3FAFE53B79DA4C /* LocalAppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAppState.swift; sourceTree = "<group>"; };
+		D5D30D72C8473D1C78A1D097 /* LocalAppStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAppStateTests.swift; sourceTree = "<group>"; };
 		DEC40F6A3FFD454202CEF289 /* GroceryListGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroceryListGeneratorTests.swift; sourceTree = "<group>"; };
 		E28E37477937D37BFD762CD8 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		E81972276FEC3FE19B14118B /* GroceryListGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroceryListGenerator.swift; sourceTree = "<group>"; };
@@ -59,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				DEC40F6A3FFD454202CEF289 /* GroceryListGeneratorTests.swift */,
+				D5D30D72C8473D1C78A1D097 /* LocalAppStateTests.swift */,
 				523DE3D6E15F8272C81C43DF /* ProgramSeedTests.swift */,
 				5239D2CA7B4C20EF5F2BC51A /* ProteinTrackerTests.swift */,
 				2F93BE1D12C0C4BD1F6CFBE6 /* WorkoutAppScaffoldTests.swift */,
@@ -245,6 +248,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB853EE811A4471AE564A859 /* GroceryListGeneratorTests.swift in Sources */,
+				5AB22167B87D77918420D47D /* LocalAppStateTests.swift in Sources */,
 				49A84B76558B7D52B9C5475C /* ProgramSeedTests.swift in Sources */,
 				89B4B9E25004846A5F8A5F21 /* ProteinTrackerTests.swift in Sources */,
 				7EB4AF421E1360082FCCC805 /* WorkoutAppScaffoldTests.swift in Sources */,
