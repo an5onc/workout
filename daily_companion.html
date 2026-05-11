@@ -1,0 +1,1056 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#7A2F4F">
+<title>Daily Workout Companion</title>
+<style>
+  :root {
+    --ink: #1A1A1A;
+    --body: #2E2E2E;
+    --muted: #6B6B6B;
+    --accent: #7A2F4F;
+    --accent-strong: #5C2239;
+    --accent-soft: #F4E4EC;
+    --accent-glow: #FBF0F4;
+    --cream: #FBF8F5;
+    --card: #FFFFFF;
+    --rule: #E5D8DE;
+    --good: #2D6A4F;
+    --good-soft: #D8F3DC;
+    --shadow: 0 1px 2px rgba(122,47,79,0.06), 0 4px 16px rgba(122,47,79,0.06);
+    --shadow-strong: 0 2px 6px rgba(122,47,79,0.08), 0 10px 32px rgba(122,47,79,0.10);
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--cream); color: var(--body);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  body { padding: 0 0 160px 0; max-width: 720px; margin: 0 auto; }
+  h1, h2, h3, h4 { color: var(--ink); margin: 0; line-height: 1.2; letter-spacing: -0.01em; }
+  p { margin: 0 0 12px 0; line-height: 1.55; }
+
+  /* Header */
+  header.top {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(251, 248, 245, 0.92);
+    backdrop-filter: saturate(180%) blur(16px);
+    -webkit-backdrop-filter: saturate(180%) blur(16px);
+    border-bottom: 1px solid var(--rule);
+    padding: 16px 20px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .greeting { display: flex; flex-direction: column; min-width: 0; }
+  .greeting .h { font-size: 18px; font-weight: 700; color: var(--ink); }
+  .greeting .s { font-size: 13px; color: var(--muted); }
+  .day-pill {
+    background: var(--accent); color: white; padding: 8px 14px; border-radius: 999px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+    border: none; cursor: pointer; white-space: nowrap;
+  }
+
+  /* Sections */
+  section { padding: 20px; }
+  section + section { padding-top: 4px; }
+
+  .card {
+    background: var(--card); border-radius: 18px; padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+    border: 1px solid rgba(229,216,222,0.5);
+  }
+  .card.accent {
+    background: linear-gradient(135deg, var(--accent-soft) 0%, var(--accent-glow) 100%);
+    border: none;
+  }
+  .card-title { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--accent); font-weight: 700; margin-bottom: 10px; }
+  .card h2 { font-size: 24px; margin-bottom: 8px; }
+  .card h3 { font-size: 17px; margin-bottom: 4px; }
+
+  /* Anxiety buster card */
+  .anxiety-card {
+    background: var(--card);
+    border-radius: 22px; padding: 22px;
+    border-left: 6px solid var(--accent);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+  .anxiety-card .label {
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin-bottom: 8px;
+  }
+  .anxiety-card .quote {
+    font-size: 19px; line-height: 1.45; color: var(--ink); font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .anxiety-card .why {
+    font-size: 14px; color: var(--muted); line-height: 1.5;
+  }
+  .anxiety-card .swap {
+    background: transparent; border: 1px solid var(--accent); color: var(--accent);
+    padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    margin-top: 12px; cursor: pointer;
+  }
+
+  /* Workout day banner */
+  .day-banner {
+    padding: 28px 22px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+    border-radius: 22px;
+    color: white;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-strong);
+  }
+  .day-banner .eyebrow { font-size: 12px; opacity: 0.75; letter-spacing: 0.14em;
+    text-transform: uppercase; font-weight: 600; margin-bottom: 6px; }
+  .day-banner h1 { color: white; font-size: 28px; margin-bottom: 6px; letter-spacing: -0.02em; }
+  .day-banner .sub { font-size: 14px; opacity: 0.85; }
+  .day-banner .meta-row { display: flex; gap: 20px; margin-top: 18px; }
+  .day-banner .meta { display: flex; flex-direction: column; }
+  .day-banner .meta .v { font-size: 22px; font-weight: 700; color: white; }
+  .day-banner .meta .k { font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* Exercise list */
+  .exercise {
+    background: var(--card);
+    border-radius: 18px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(229,216,222,0.5);
+  }
+  .exercise.done { opacity: 0.55; }
+  .exercise-header {
+    padding: 16px 18px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; user-select: none;
+  }
+  .exercise-num {
+    width: 36px; height: 36px; flex-shrink: 0;
+    background: var(--accent-soft); color: var(--accent);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px;
+  }
+  .exercise.done .exercise-num {
+    background: var(--good); color: white;
+  }
+  .exercise-title-block { flex: 1; min-width: 0; }
+  .exercise-name { font-weight: 700; color: var(--ink); font-size: 16px; line-height: 1.25; }
+  .exercise-meta { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .exercise-chev {
+    color: var(--accent); transition: transform 0.2s ease; flex-shrink: 0;
+    font-size: 20px;
+  }
+  .exercise.open .exercise-chev { transform: rotate(90deg); }
+
+  .exercise-body {
+    display: none;
+    padding: 0 18px 18px 18px;
+    border-top: 1px solid var(--rule);
+    padding-top: 14px;
+    margin-top: 4px;
+  }
+  .exercise.open .exercise-body { display: block; }
+
+  .sets-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 8px; margin: 8px 0 16px 0;
+  }
+  .set-btn {
+    background: var(--cream); border: 2px solid var(--rule);
+    padding: 12px 8px; border-radius: 14px;
+    font-weight: 700; font-size: 14px; color: var(--ink);
+    cursor: pointer; text-align: center;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .set-btn .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.08em; font-weight: 600; margin-bottom: 4px; }
+  .set-btn.done {
+    background: var(--good); border-color: var(--good); color: white;
+  }
+  .set-btn.done .lbl { color: rgba(255,255,255,0.7); }
+
+  .weight-log {
+    display: flex; align-items: center; gap: 8px; margin: 4px 0 14px 0;
+  }
+  .weight-log input {
+    flex: 1; background: var(--cream); border: 1.5px solid var(--rule);
+    padding: 10px 14px; border-radius: 12px; font-size: 15px; color: var(--ink);
+    font-weight: 600; font-family: inherit;
+  }
+  .weight-log input:focus { outline: none; border-color: var(--accent); }
+  .weight-log label { font-size: 12px; color: var(--muted); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .form-card {
+    background: var(--cream); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;
+  }
+  .form-card .ft { font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--accent); margin-bottom: 6px; }
+  .form-card .fb { font-size: 14px; line-height: 1.5; color: var(--body); }
+  .form-card ul { margin: 6px 0 0 0; padding-left: 18px; }
+  .form-card li { margin: 4px 0; line-height: 1.5; }
+
+  .feel-card {
+    background: var(--accent-glow); border-radius: 12px; padding: 14px 16px;
+    border-left: 3px solid var(--accent);
+  }
+  .feel-card .ft { font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--accent); margin-bottom: 6px; }
+
+  /* Encouragement banner between exercises */
+  .pep-talk {
+    background: transparent;
+    padding: 14px 24px;
+    text-align: center;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 15px;
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  /* Rest day */
+  .rest-day {
+    text-align: center; padding: 60px 30px;
+    background: var(--card); border-radius: 22px;
+    box-shadow: var(--shadow);
+  }
+  .rest-day .emoji { font-size: 56px; margin-bottom: 18px; }
+  .rest-day h2 { font-size: 28px; margin-bottom: 12px; }
+  .rest-day p { color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+  /* Meals */
+  .meal {
+    background: var(--card); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+    display: flex; gap: 12px; align-items: flex-start;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(229,216,222,0.5);
+  }
+  .meal-time {
+    background: var(--accent-soft); color: var(--accent);
+    padding: 6px 10px; border-radius: 8px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .meal-body { flex: 1; min-width: 0; }
+  .meal-name { font-weight: 700; color: var(--ink); font-size: 15px; margin-bottom: 2px; }
+  .meal-detail { font-size: 13px; color: var(--muted); line-height: 1.4; }
+  .meal-check {
+    width: 28px; height: 28px; flex-shrink: 0;
+    border: 2px solid var(--rule); border-radius: 8px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    background: transparent; padding: 0;
+  }
+  .meal-check.done { background: var(--good); border-color: var(--good); }
+  .meal-check.done::after { content: "✓"; color: white; font-weight: 700; font-size: 16px; }
+
+  /* Protein tracker */
+  .protein-tracker {
+    background: var(--card); border-radius: 18px; padding: 20px;
+    box-shadow: var(--shadow); margin-bottom: 14px;
+  }
+  .pt-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .pt-head h3 { font-size: 17px; }
+  .pt-head .nums { font-size: 22px; font-weight: 700; color: var(--ink); }
+  .pt-head .nums .target { color: var(--muted); font-size: 16px; font-weight: 500; }
+  .pt-bar {
+    height: 12px; background: var(--cream); border-radius: 999px; overflow: hidden;
+    position: relative;
+  }
+  .pt-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent) 0%, var(--accent-strong) 100%);
+    border-radius: 999px; transition: width 0.4s ease; width: 0;
+  }
+  .pt-buttons { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; }
+  .pt-btn {
+    background: var(--cream); border: 1.5px solid var(--rule);
+    padding: 8px 12px; border-radius: 999px;
+    font-size: 13px; font-weight: 600; color: var(--ink);
+    cursor: pointer; font-family: inherit;
+  }
+  .pt-btn:active { background: var(--accent-soft); }
+
+  /* Reminder card */
+  .scale-reminder {
+    background: var(--accent-glow); border-radius: 14px; padding: 16px;
+    border-left: 4px solid var(--accent);
+    font-size: 13px; line-height: 1.5; color: var(--body);
+  }
+  .scale-reminder strong { color: var(--accent); }
+
+  /* Tab nav */
+  nav.tabs {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: saturate(180%) blur(16px);
+    -webkit-backdrop-filter: saturate(180%) blur(16px);
+    border-top: 1px solid var(--rule);
+    display: flex; justify-content: space-around;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom)) 0;
+    z-index: 40;
+  }
+  nav.tabs button {
+    background: transparent; border: none; padding: 10px 18px;
+    color: var(--muted); font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    cursor: pointer; font-family: inherit;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  nav.tabs button .ico { font-size: 22px; }
+  nav.tabs button.active { color: var(--accent); }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* Section header */
+  .sect-h {
+    padding: 8px 4px 14px 4px;
+    font-size: 13px; color: var(--muted); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+
+  /* Day picker modal */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(26,26,26,0.5);
+    backdrop-filter: blur(4px);
+    display: none; align-items: flex-end; justify-content: center;
+    z-index: 100;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: var(--card); border-radius: 22px 22px 0 0;
+    width: 100%; max-width: 720px; padding: 24px;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
+  }
+  .modal h3 { margin-bottom: 16px; font-size: 19px; }
+  .modal .day-list { display: flex; flex-direction: column; gap: 6px; }
+  .modal .day-row {
+    padding: 14px 16px; background: var(--cream); border-radius: 12px;
+    border: none; text-align: left; cursor: pointer; font-family: inherit;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 15px; color: var(--ink); font-weight: 600;
+  }
+  .modal .day-row.active { background: var(--accent-soft); color: var(--accent); }
+  .modal .day-row .focus { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .modal .day-row.active .focus { color: var(--accent); }
+  .modal .close { width: 100%; margin-top: 14px;
+    background: var(--accent); color: white; border: none;
+    padding: 14px; border-radius: 14px; font-weight: 700; font-size: 14px;
+    cursor: pointer; font-family: inherit; }
+
+  @media (min-width: 600px) {
+    body { padding-top: 0; }
+    section { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="greeting">
+    <div class="h" id="greetText">Good morning</div>
+    <div class="s" id="dateText">—</div>
+  </div>
+  <button class="day-pill" onclick="openDayPicker()" id="dayPillBtn">—</button>
+</header>
+
+<!-- =========================== WORKOUT VIEW =========================== -->
+<div class="view active" id="view-workout">
+
+  <section>
+    <!-- Anxiety buster -->
+    <div class="anxiety-card">
+      <div class="label">A note before you start</div>
+      <div class="quote" id="anxietyQuote">—</div>
+      <div class="why" id="anxietyWhy">—</div>
+      <button class="swap" onclick="rotateAnxiety()">Show me a different one</button>
+    </div>
+
+    <!-- Day banner -->
+    <div class="day-banner" id="dayBanner">
+      <div class="eyebrow" id="dayEyebrow">—</div>
+      <h1 id="dayName">—</h1>
+      <div class="sub" id="daySub">—</div>
+      <div class="meta-row" id="dayMeta"></div>
+    </div>
+
+    <!-- Exercises -->
+    <div id="exerciseList"></div>
+
+    <!-- Bottom encouragement -->
+    <div class="pep-talk" id="bottomPep">—</div>
+  </section>
+
+</div>
+
+<!-- =========================== FOOD VIEW =========================== -->
+<div class="view" id="view-food">
+
+  <section>
+    <div class="protein-tracker">
+      <div class="pt-head">
+        <h3>Today's protein</h3>
+        <div class="nums"><span id="proteinNum">0</span>g <span class="target">/ 145g</span></div>
+      </div>
+      <div class="pt-bar"><div class="pt-fill" id="proteinFill"></div></div>
+      <div class="pt-buttons">
+        <button class="pt-btn" onclick="addProtein(15)">+ 15g</button>
+        <button class="pt-btn" onclick="addProtein(25)">+ 25g (scoop / yogurt)</button>
+        <button class="pt-btn" onclick="addProtein(35)">+ 35g (5oz chicken)</button>
+        <button class="pt-btn" onclick="addProtein(12)">+ 12g (2 eggs)</button>
+        <button class="pt-btn" onclick="resetProtein()" style="margin-left:auto; color: var(--muted);">Reset</button>
+      </div>
+    </div>
+
+    <div class="scale-reminder">
+      <strong>Reminder:</strong> The scale lies during the first 6–8 weeks. Creatine + new muscle glycogen = water weight gain that LOOKS like fat but isn't. Trust the tape measure and the photos. Trust the work.
+    </div>
+  </section>
+
+  <section>
+    <div class="sect-h">Today's meals</div>
+    <div id="mealList"></div>
+  </section>
+
+  <section>
+    <div class="sect-h">Daily targets</div>
+    <div class="card">
+      <p style="margin:0; font-size:14px; line-height:1.6;">
+        <strong>1,600 calories</strong> · <strong>145g protein</strong> · <strong>50g fat</strong> · <strong>145g carbs</strong> · <strong>100 oz water</strong>
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-title">If you remember nothing else</div>
+      <p style="margin:0;">Hit the protein. The calories will mostly take care of themselves if you do.</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- =========================== MIND VIEW =========================== -->
+<div class="view" id="view-mind">
+  <section>
+    <div class="anxiety-card" style="margin-bottom: 14px;">
+      <div class="label">When you feel watched</div>
+      <div class="quote">Take a beat. Look in any direction other than the one you feel "watched" from. Notice that other people are looking at their own reflections, their phones, the ceiling. You were peripherally registered, not focally observed.</div>
+    </div>
+
+    <div class="anxiety-card" style="margin-bottom: 14px;">
+      <div class="label">When you don't know how to use a machine</div>
+      <div class="quote">Every machine has a sticker with a diagram. Read it. Take 30 seconds. If you're still unsure, do an empty rep — just move the pads through the motion with no weight to see what it does.</div>
+      <div class="why">Looking unfamiliar with a machine for 60 seconds is invisible to everyone but you.</div>
+    </div>
+
+    <div class="anxiety-card" style="margin-bottom: 14px;">
+      <div class="label">When you can't finish a set</div>
+      <div class="quote">Drop the weight. There's no shame in a drop set. Finishing the prescribed reps with a lighter weight is more valuable than failing reps you didn't have.</div>
+    </div>
+
+    <div class="anxiety-card" style="margin-bottom: 14px;">
+      <div class="label">When you don't want to go</div>
+      <div class="quote">Make the rule: "Just put the gym clothes on." That's the only commitment.</div>
+      <div class="why">90% of the time, once they're on, you go. The remaining 10% is a real signal you need a rest day. Take it without guilt.</div>
+    </div>
+
+    <div class="sect-h" style="margin-top: 18px;">Between sets, remind yourself:</div>
+    <div class="card" id="mindMantras"></div>
+
+    <div class="scale-reminder">
+      <strong>Bottom line:</strong> Showing up is the entire game. Form is a skill you build, not a test you pass. Every confident person in that gym was a beginner exactly here.
+    </div>
+  </section>
+</div>
+
+<!-- =========================== DAY PICKER MODAL =========================== -->
+<div class="modal-backdrop" id="dayPicker" onclick="if(event.target===this)closeDayPicker()">
+  <div class="modal">
+    <h3>Which day's workout?</h3>
+    <div class="day-list" id="dayList"></div>
+    <button class="close" onclick="closeDayPicker()">Done</button>
+  </div>
+</div>
+
+<!-- =========================== TAB NAV =========================== -->
+<nav class="tabs">
+  <button onclick="showView('workout')" id="tab-workout" class="active">
+    <span class="ico">💪</span>Workout
+  </button>
+  <button onclick="showView('food')" id="tab-food">
+    <span class="ico">🍽️</span>Food
+  </button>
+  <button onclick="showView('mind')" id="tab-mind">
+    <span class="ico">🧠</span>Mind
+  </button>
+</nav>
+
+<script>
+// ==================== DATA ====================
+const ANXIETY_QUOTES = [
+  { q: "I belong here. My ticket in was paid, same as everyone else's.", why: "You earned the right to be in this room. So did everyone else. That's the only criterion." },
+  { q: "Everyone here is focused on themselves.", why: "Walk through the gym and look at people: they're checking their own form in the mirror, scrolling phones, staring into space. Nobody is watching you. Not even a little." },
+  { q: "Looking awkward learning a new exercise IS the work.", why: "The strong-looking people did this part first. There's no shortcut around it. The awkward minute is the price of the year of confidence that follows." },
+  { q: "The weight on the bar is not a measure of who I am.", why: "Showing up is. Everything else is just the practice." },
+  { q: "I'm here because the version of me I'm building is worth the work.", why: "Not because I hate who I am now. Because the next version of me is exciting." },
+  { q: "If someone is judging me, that's their problem to carry. Not mine.", why: "And almost no one is. The few who do are showing you who they are, not who you are." },
+  { q: "Three months of consistent work changes a body.", why: "Twelve weeks. Twelve. That's all that stands between today and a different mirror." },
+  { q: "Rest between sets is part of the program, not a sign of weakness.", why: "Standing still while you breathe is doing the work. The work is what happens between sets too." },
+  { q: "I don't have to do it perfectly. I just have to do it.", why: "Perfectionism is procrastination in a nice outfit. Progress beats perfect every time." },
+];
+
+const MANTRAS = [
+  "I'm doing the thing.",
+  "One more breath, one more rep.",
+  "The body adapts. I'm asking it to.",
+  "Form first, weight second.",
+  "Soft jaw, hard core.",
+  "This is for future-me.",
+  "I'm not behind. I'm right on time.",
+  "Slow is smooth, smooth is strong.",
+];
+
+const PEP_TALKS = [
+  "You showed up. That's already most of it.",
+  "Every set you finish is a vote for the person you're becoming.",
+  "The hardest part is putting the shoes on. You're past that.",
+  "The mirror isn't your enemy. It's your form coach.",
+  "Comfortable doesn't grow muscle. You're choosing harder. Good.",
+];
+
+const WORKOUT_DAYS = {
+  monday: {
+    name: "Lower A",
+    focus: "Glute + Quad",
+    sub: "Compound glute-builder, then quad-dominant work.",
+    exercises: [
+      { n: "Barbell Hip Thrust", sets: 4, reps: "8–10", rest: "90–120s",
+        cues: ["Push the floor away with your heels — not your toes.",
+               "Ribs DOWN at the top, don't flare them up.",
+               "Squeeze glutes hard at the top for 1 second.",
+               "Chin tucked, eyes on your hips."],
+        mistakes: ["Hyperextending the lower back at the top.", "Knees caving inward."],
+        feel: "Deep working burn in the meat of your glutes. If your lower back is talking, your hips aren't doing the work." },
+      { n: "Heel-Elevated Goblet Squat", sets: 3, reps: "10", rest: "75–90s",
+        cues: ["Chest proud, eyes forward.",
+               "Knees track over toes — push them out.",
+               "Sit DOWN, not back. Heel elevation makes this vertical."],
+        mistakes: ["Letting the chest collapse forward.", "Coming up onto your toes."],
+        feel: "Burn in the front of your thighs, stretch in glutes at the bottom." },
+      { n: "DB Walking Lunge", sets: 3, reps: "10/leg", rest: "60–90s",
+        cues: ["Long step length = more glute. Go long.",
+               "Push through the heel of the FRONT foot.",
+               "Torso upright, like a string pulling your head up."],
+        mistakes: ["Steps too short.", "Letting the front knee cave inward."],
+        feel: "Glutes + front-leg quad. The standing-up phase is the magic." },
+      { n: "Leg Extension Machine", sets: 3, reps: "12", rest: "60s",
+        cues: ["Squeeze HARD at the top for 1 second.",
+               "Slow eccentric — 2–3 seconds down.",
+               "Full extension at the top."],
+        mistakes: ["Using momentum.", "Half reps."],
+        feel: "Direct isolated burn in your quads. Legs feel shaky by the end." },
+      { n: "Standing Calf Raise", sets: 3, reps: "15", rest: "45–60s",
+        cues: ["All the way UP, all the way DOWN with a stretch.",
+               "Pause at the top AND bottom.",
+               "No bouncing."],
+        mistakes: ["Half reps.", "Bouncing out of the bottom."],
+        feel: "Burn straight through both calves." },
+    ],
+  },
+  tuesday: {
+    name: "Upper Push",
+    focus: "Chest, shoulders, triceps",
+    sub: "Chest, shoulders, triceps.",
+    exercises: [
+      { n: "DB Bench Press", sets: 3, reps: "8–10", rest: "90s",
+        cues: ["Elbows at 45° from body — not flared to 90.",
+               "Shoulder blades pinned back & down.",
+               "Press up and slightly in."],
+        mistakes: ["Elbows flared to 90°.", "Bouncing dumbbells off your chest."],
+        feel: "Chest doing most of the work, triceps helping at the top." },
+      { n: "Seated DB Shoulder Press", sets: 3, reps: "8–10", rest: "90s",
+        cues: ["Bench at 80–85°, almost upright.",
+               "Elbows slightly in FRONT of your body, not to the sides.",
+               "Wrists stacked over elbows."],
+        mistakes: ["Arching lower back to push more weight.", "Elbows behind ears."],
+        feel: "Shoulders. Arms feel like wet noodles by the end." },
+      { n: "Cable Lateral Raise", sets: 3, reps: "12", rest: "45–60s",
+        cues: ["Lead with the elbow, not the hand.",
+               "Pinkie slightly higher than thumb at the top.",
+               "Don't go above shoulder height."],
+        mistakes: ["Swinging the body.", "Too heavy."],
+        feel: "Outside of the shoulder. If you feel it in traps/neck, drop weight." },
+      { n: "Incline DB Press", sets: 3, reps: "10", rest: "90s",
+        cues: ["30° bench — not steeper.",
+               "Same 45° elbow angle as flat bench."],
+        mistakes: ["Bench too steep.", "Hips lifting off the bench."],
+        feel: "Upper chest — the shelf-look part." },
+      { n: "Triceps Rope Pushdown", sets: 3, reps: "12", rest: "45–60s",
+        cues: ["Elbows DO NOT move. Pinned to ribs.",
+               "Separate hands at the bottom — palms turn down."],
+        mistakes: ["Elbows drifting forward.", "Leaning over the rope."],
+        feel: "Sharp burn on the back of your arms." },
+      { n: "Plank", sets: 3, reps: "30–45s", rest: "60s",
+        cues: ["Hips level — not sagging or pointing up.",
+               "Squeeze the glutes. This is critical.",
+               "Breathe normally."],
+        mistakes: ["Sagging hips.", "Holding breath."],
+        feel: "Whole core working. If only your back feels it, you're sagging." },
+    ],
+  },
+  wednesday: {
+    name: "Lower B",
+    focus: "Glute + Hamstring",
+    sub: "Posterior chain — back of the legs and butt.",
+    exercises: [
+      { n: "Barbell Romanian Deadlift", sets: 4, reps: "8–10", rest: "90–120s",
+        cues: ["HINGE — push hips back like closing a car door with your butt.",
+               "Bar stays in contact with your legs the whole way.",
+               "Knees stay BENT but don't move much.",
+               "Stretch first, then return."],
+        mistakes: ["Squatting it — bending knees too much.", "Bar drifts away from body."],
+        feel: "Hamstring stretch at the bottom, glutes squeezing at the top." },
+      { n: "Cable Glute Kickback", sets: 3, reps: "12/leg", rest: "45s",
+        cues: ["Lead with the HEEL, not the toes.",
+               "Don't lean forward.",
+               "Hold the squeeze at the top."],
+        mistakes: ["Forward lean to fake range.", "Using lower back to lift leg higher."],
+        feel: "Direct burn in the working glute." },
+      { n: "DB Bulgarian Split Squat", sets: 3, reps: "8/leg", rest: "60–90s",
+        cues: ["Step out far enough — front knee shouldn't shoot way over the toes.",
+               "Lean torso forward 10–15° (more glute).",
+               "Drive through the FRONT heel."],
+        mistakes: ["Foot too close to bench.", "Bouncing out of the bottom."],
+        feel: "Front-leg glute and quad. Humbling — start light." },
+      { n: "Seated Hamstring Curl", sets: 3, reps: "12", rest: "60s",
+        cues: ["Squeeze at the bottom of the curl.",
+               "Slow eccentric — 2–3 seconds.",
+               "Toes pointed AWAY from you for more hamstring."],
+        mistakes: ["Going too heavy.", "Letting the weight slam back."],
+        feel: "Burn in the back of the thighs." },
+      { n: "Hip Abduction Machine", sets: 3, reps: "15", rest: "45–60s",
+        cues: ["Lean forward 15° — this hits the upper glute (side-shelf look).",
+               "Slow release — 3 seconds back.",
+               "Squeeze at the end range."],
+        mistakes: ["Banging the pads together coming back."],
+        feel: "Burn on the side of glutes — right above the hip pocket of jeans." },
+      { n: "Hanging Knee Raise", sets: 3, reps: "10–12", rest: "60s",
+        cues: ["ROLL the hips up at the top — that's the ab work.",
+               "Control the descent. No swinging.",
+               "Use captain's chair if hanging is hard on grip."],
+        mistakes: ["Pure hip flexor swing with no pelvic curl."],
+        feel: "Lower abs working hard." },
+    ],
+  },
+  thursday: { rest: true, name: "Rest day", sub: "Full recovery. Optional 20–30 min walk if you want to move. NO lifting." },
+  friday: {
+    name: "Upper Pull",
+    focus: "Back, biceps, core",
+    sub: "Back and biceps.",
+    exercises: [
+      { n: "Lat Pulldown", sets: 4, reps: "10", rest: "90s",
+        cues: ["Lean back ~15°.",
+               "Pull with your ELBOWS, not your hands. Elbows to ribs.",
+               "Bar to UPPER CHEST, not chin, not belly.",
+               "Full stretch at the top — let lats lengthen."],
+        mistakes: ["Pulling with biceps (arms bend before back engages).", "Half reps."],
+        feel: "Burn outside of your back (lats), stretch at the top." },
+      { n: "Seated Cable Row", sets: 3, reps: "10", rest: "90s",
+        cues: ["Chest UP the entire time.",
+               "Pull with elbows, lead with the back.",
+               "Squeeze at the back, stretch at the front."],
+        mistakes: ["Rounding lower back at the stretch.", "Shoulders shrugging up."],
+        feel: "All through middle of back and a little biceps." },
+      { n: "DB Single-Arm Row", sets: 3, reps: "10/arm", rest: "60s",
+        cues: ["Elbow back and UP, not out to the side.",
+               "Don't TWIST the torso — both shoulders stay level.",
+               "Pull to the HIP, not chest."],
+        mistakes: ["Twisting torso to lift more.", "Shoulder shrugging up."],
+        feel: "Lat on working side burning — like a fist between shoulder blade and spine." },
+      { n: "Cable Face Pull", sets: 3, reps: "12–15", rest: "45–60s",
+        cues: ["Elbows UP and OUT — wider than hands.",
+               "Pull to your FACE, not your chest.",
+               "Light weight. Finesse exercise."],
+        mistakes: ["Too heavy, using lats instead of rear delts."],
+        feel: "Back of shoulders + between shoulder blades. Great for posture." },
+      { n: "DB Curl", sets: 3, reps: "10", rest: "60s",
+        cues: ["Elbows PINNED to your sides.",
+               "Squeeze at the top.",
+               "Slow lower — 2 seconds."],
+        mistakes: ["Swinging the torso.", "Elbow drifting forward."],
+        feel: "Front of upper arm burning." },
+      { n: "Pallof Press", sets: 3, reps: "10/side", rest: "45s",
+        cues: ["The cable wants to rotate you — DON'T let it.",
+               "Press straight out from your sternum.",
+               "Shoulders, hips, feet all squared forward."],
+        mistakes: ["Letting torso twist toward the machine.", "Too heavy."],
+        feel: "Deep core engagement on the side closer to the cable." },
+    ],
+  },
+  saturday: {
+    name: "Lower C",
+    focus: "Glute Volume Day",
+    sub: "Highest-volume glute day of the week. This is where the butt grows.",
+    exercises: [
+      { n: "Smith Machine Hip Thrust", sets: 4, reps: "12", rest: "90s",
+        cues: ["Same form as barbell hip thrust.",
+               "Use the stability of the Smith machine to push harder.",
+               "Pad the bar."],
+        mistakes: ["Hyperextending lower back.", "Ribs flared."],
+        feel: "Glutes blowing up. You can push more weight than free barbell version." },
+      { n: "DB Sumo Deadlift", sets: 3, reps: "8", rest: "90s",
+        cues: ["Wide stance, toes pointed out 30°.",
+               "Knees track over toes — push OUT.",
+               "Chest up, back flat."],
+        mistakes: ["Knees caving inward.", "Rounding back at the bottom."],
+        feel: "Glutes, inner thighs, hamstrings all firing." },
+      { n: "DB Step-Up", sets: 3, reps: "10/leg", rest: "60s",
+        cues: ["Knee-height bench (or higher = more glute).",
+               "Drive through the HEEL of the top foot.",
+               "DON'T push off the bottom leg — that's the cheat."],
+        mistakes: ["Pushing off the bottom leg.", "Hopping at the top."],
+        feel: "Top-leg glute and quad doing all the work." },
+      { n: "Cable Pull-Through", sets: 3, reps: "12", rest: "60–75s",
+        cues: ["It's an RDL with resistance from behind. Hip hinge pattern.",
+               "Squeeze glutes HARD at the lockout.",
+               "Don't squat it — knees stay quiet."],
+        mistakes: ["Squatting instead of hinging.", "Hyperextending at the top."],
+        feel: "Hamstring stretch at the bottom, glute squeeze at the top." },
+      { n: "Hip Abduction Machine", sets: 3, reps: "15 + drop set on last", rest: "60s",
+        cues: ["Lean forward 15°.",
+               "On last set: do 15, drop weight by half, do 10 more without resting.",
+               "Squeeze at the end range."],
+        mistakes: ["Sitting fully upright."],
+        feel: "Burn on outside of glutes. The drop set will be brutal. Embrace it." },
+    ],
+  },
+  sunday: { rest: true, name: "Rest day + meal prep", sub: "Full rest. Sunday meal prep day — cook proteins and grains for the week. See the meal prep section of your master plan." },
+};
+
+const MEALS_BY_DAY = {
+  default: [
+    { time: "4:15 AM", name: "Pre-workout", detail: "1 banana + 1 tbsp peanut butter + black coffee", protein: 5 },
+    { time: "5:45 AM", name: "Post-workout shake", detail: "1 scoop whey + 1/2 banana + 5g creatine + almond milk", protein: 28 },
+    { time: "7:30 AM", name: "Breakfast", detail: "Greek yogurt power bowl OR protein oatmeal", protein: 28 },
+    { time: "12:30 PM", name: "Lunch", detail: "Chicken & rice power bowl (prepped Sunday)", protein: 42 },
+    { time: "3:30 PM", name: "Snack", detail: "Apple + 1 tbsp peanut butter — OR — Greek yogurt", protein: 18 },
+    { time: "6:30 PM", name: "Dinner", detail: "Sheet-pan salmon & veg — OR — lean beef stir-fry", protein: 35 },
+  ],
+  restDay: [
+    { time: "8:00 AM", name: "Breakfast", detail: "Egg white & veggie scramble + toast", protein: 25 },
+    { time: "12:30 PM", name: "Lunch", detail: "Tuna & chickpea salad", protein: 36 },
+    { time: "3:30 PM", name: "Snack", detail: "Cottage cheese + rice cakes", protein: 14 },
+    { time: "6:30 PM", name: "Dinner", detail: "Greek chicken & quinoa", protein: 42 },
+    { time: "9:00 PM", name: "Snack (optional)", detail: "Greek yogurt + berries", protein: 18 },
+  ],
+};
+
+// ==================== STATE ====================
+const dayNames = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+
+function todayKey() {
+  return dayNames[new Date().getDay()];
+}
+
+function dateString() {
+  const d = new Date();
+  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+}
+
+function stateKey() {
+  const d = new Date();
+  // YYYY-MM-DD
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function loadState() {
+  try {
+    return JSON.parse(localStorage.getItem("dailyCompanion_" + stateKey()) || "{}");
+  } catch { return {}; }
+}
+function saveState(s) {
+  localStorage.setItem("dailyCompanion_" + stateKey(), JSON.stringify(s));
+}
+
+let currentDay = (() => {
+  const override = sessionStorage.getItem("currentDayOverride");
+  return override || todayKey();
+})();
+
+let state = loadState();
+state.sets = state.sets || {};
+state.weights = state.weights || {};
+state.openExercises = state.openExercises || {};
+state.protein = state.protein || 0;
+state.meals = state.meals || {};
+state.anxietyIdx = state.anxietyIdx ?? Math.floor(Math.random() * ANXIETY_QUOTES.length);
+
+// ==================== RENDER ====================
+function greetingText() {
+  const h = new Date().getHours();
+  if (h < 11) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function renderHeader() {
+  document.getElementById("greetText").textContent = greetingText();
+  document.getElementById("dateText").textContent = dateString();
+  const day = WORKOUT_DAYS[currentDay];
+  const label = day.rest ? "Rest day" : day.name;
+  document.getElementById("dayPillBtn").textContent = label;
+}
+
+function renderAnxiety() {
+  const a = ANXIETY_QUOTES[state.anxietyIdx % ANXIETY_QUOTES.length];
+  document.getElementById("anxietyQuote").textContent = `"${a.q}"`;
+  document.getElementById("anxietyWhy").textContent = a.why;
+}
+
+function rotateAnxiety() {
+  state.anxietyIdx = (state.anxietyIdx + 1) % ANXIETY_QUOTES.length;
+  saveState(state);
+  renderAnxiety();
+}
+
+function renderDayBanner() {
+  const day = WORKOUT_DAYS[currentDay];
+  document.getElementById("dayEyebrow").textContent = day.rest ? "Today" : `Today · ${day.focus}`;
+  document.getElementById("dayName").textContent = day.name;
+  document.getElementById("daySub").textContent = day.sub;
+  const meta = document.getElementById("dayMeta");
+  meta.innerHTML = "";
+  if (!day.rest) {
+    const totalSets = day.exercises.reduce((s, e) => s + e.sets, 0);
+    const exCount = day.exercises.length;
+    meta.innerHTML = `
+      <div class="meta"><div class="v">${exCount}</div><div class="k">Exercises</div></div>
+      <div class="meta"><div class="v">${totalSets}</div><div class="k">Working sets</div></div>
+      <div class="meta"><div class="v">~60m</div><div class="k">Duration</div></div>
+    `;
+  }
+}
+
+function renderExercises() {
+  const list = document.getElementById("exerciseList");
+  list.innerHTML = "";
+  const day = WORKOUT_DAYS[currentDay];
+
+  if (day.rest) {
+    list.innerHTML = `<div class="rest-day">
+      <div class="emoji">🌿</div>
+      <h2>Rest day</h2>
+      <p>${day.sub}</p>
+      <p style="margin-top:14px;color:var(--accent);font-weight:600;">Recovery is when the body actually rebuilds. Today is doing the work too.</p>
+    </div>`;
+    document.getElementById("bottomPep").textContent = "";
+    return;
+  }
+
+  day.exercises.forEach((ex, idx) => {
+    const exId = `${currentDay}_${idx}`;
+    const isOpen = !!state.openExercises[exId];
+    const setKeys = Array.from({ length: ex.sets }, (_, i) => `${exId}_s${i}`);
+    const setsDone = setKeys.filter(k => state.sets[k]).length;
+    const allDone = setsDone === ex.sets;
+
+    const el = document.createElement("div");
+    el.className = "exercise" + (isOpen ? " open" : "") + (allDone ? " done" : "");
+
+    el.innerHTML = `
+      <div class="exercise-header" onclick="toggleExercise('${exId}')">
+        <div class="exercise-num">${allDone ? "✓" : idx + 1}</div>
+        <div class="exercise-title-block">
+          <div class="exercise-name">${ex.n}</div>
+          <div class="exercise-meta">${ex.sets} × ${ex.reps} · rest ${ex.rest} · ${setsDone}/${ex.sets} done</div>
+        </div>
+        <div class="exercise-chev">›</div>
+      </div>
+      <div class="exercise-body">
+        <div class="sets-grid">
+          ${setKeys.map((k, i) => `
+            <button class="set-btn ${state.sets[k] ? 'done' : ''}" onclick="toggleSet('${k}')">
+              <div class="lbl">Set ${i+1}</div>
+              ${ex.reps}
+            </button>
+          `).join("")}
+        </div>
+
+        <div class="weight-log">
+          <label>Weight used:</label>
+          <input type="text" placeholder="lbs" value="${state.weights[exId] || ""}"
+            oninput="logWeight('${exId}', this.value)">
+        </div>
+
+        <div class="form-card">
+          <div class="ft">Form cues</div>
+          <ul>${ex.cues.map(c => `<li>${c}</li>`).join("")}</ul>
+        </div>
+
+        <div class="form-card">
+          <div class="ft">Avoid</div>
+          <ul>${ex.mistakes.map(m => `<li>${m}</li>`).join("")}</ul>
+        </div>
+
+        <div class="feel-card">
+          <div class="ft">What it should feel like</div>
+          <div>${ex.feel}</div>
+        </div>
+      </div>
+    `;
+
+    list.appendChild(el);
+
+    // Insert pep talk every 2 exercises
+    if (idx > 0 && idx < day.exercises.length - 1 && (idx + 1) % 2 === 0) {
+      const pep = document.createElement("div");
+      pep.className = "pep-talk";
+      pep.textContent = `"${PEP_TALKS[idx % PEP_TALKS.length]}"`;
+      list.appendChild(pep);
+    }
+  });
+
+  const pep = PEP_TALKS[(new Date().getDate()) % PEP_TALKS.length];
+  document.getElementById("bottomPep").textContent = `"${pep}"`;
+}
+
+function toggleExercise(exId) {
+  state.openExercises[exId] = !state.openExercises[exId];
+  saveState(state);
+  renderExercises();
+}
+
+function toggleSet(setKey) {
+  state.sets[setKey] = !state.sets[setKey];
+  saveState(state);
+  renderExercises();
+}
+
+function logWeight(exId, val) {
+  state.weights[exId] = val;
+  saveState(state);
+}
+
+// ==================== FOOD ====================
+function renderMeals() {
+  const list = document.getElementById("mealList");
+  list.innerHTML = "";
+  const day = WORKOUT_DAYS[currentDay];
+  const meals = day.rest ? MEALS_BY_DAY.restDay : MEALS_BY_DAY.default;
+
+  meals.forEach((m, idx) => {
+    const k = `${currentDay}_meal_${idx}`;
+    const done = !!state.meals[k];
+    const el = document.createElement("div");
+    el.className = "meal";
+    el.innerHTML = `
+      <div class="meal-time">${m.time}</div>
+      <div class="meal-body">
+        <div class="meal-name">${m.name} · ${m.protein}g P</div>
+        <div class="meal-detail">${m.detail}</div>
+      </div>
+      <button class="meal-check ${done ? 'done' : ''}" onclick="toggleMeal('${k}', ${m.protein})"></button>
+    `;
+    list.appendChild(el);
+  });
+}
+
+function toggleMeal(key, proteinG) {
+  const wasDone = !!state.meals[key];
+  state.meals[key] = !wasDone;
+  if (wasDone) {
+    state.protein = Math.max(0, (state.protein || 0) - proteinG);
+  } else {
+    state.protein = (state.protein || 0) + proteinG;
+  }
+  saveState(state);
+  renderMeals();
+  renderProtein();
+}
+
+function renderProtein() {
+  const p = state.protein || 0;
+  document.getElementById("proteinNum").textContent = p;
+  const pct = Math.min(100, (p / 145) * 100);
+  document.getElementById("proteinFill").style.width = pct + "%";
+}
+
+function addProtein(g) {
+  state.protein = (state.protein || 0) + g;
+  saveState(state);
+  renderProtein();
+}
+
+function resetProtein() {
+  state.protein = 0;
+  // Also reset meal checks
+  state.meals = {};
+  saveState(state);
+  renderProtein();
+  renderMeals();
+}
+
+// ==================== MIND ====================
+function renderMantras() {
+  const c = document.getElementById("mindMantras");
+  c.innerHTML = MANTRAS.map(m => `<p style="margin:6px 0;font-size:15px;color:var(--ink);">"${m}"</p>`).join("");
+}
+
+// ==================== VIEWS ====================
+function showView(name) {
+  ["workout", "food", "mind"].forEach(v => {
+    document.getElementById("view-" + v).classList.toggle("active", v === name);
+    document.getElementById("tab-" + v).classList.toggle("active", v === name);
+  });
+  window.scrollTo(0, 0);
+}
+
+// ==================== DAY PICKER ====================
+function openDayPicker() {
+  const list = document.getElementById("dayList");
+  list.innerHTML = "";
+  dayNames.forEach(d => {
+    const day = WORKOUT_DAYS[d];
+    const label = d.charAt(0).toUpperCase() + d.slice(1);
+    const focus = day.rest ? "Rest" : `${day.name} — ${day.focus}`;
+    const row = document.createElement("button");
+    row.className = "day-row" + (d === currentDay ? " active" : "");
+    row.innerHTML = `<span>${label}</span><span class="focus">${focus}</span>`;
+    row.onclick = () => selectDay(d);
+    list.appendChild(row);
+  });
+  document.getElementById("dayPicker").classList.add("show");
+}
+function closeDayPicker() {
+  document.getElementById("dayPicker").classList.remove("show");
+}
+function selectDay(d) {
+  currentDay = d;
+  if (d === todayKey()) {
+    sessionStorage.removeItem("currentDayOverride");
+  } else {
+    sessionStorage.setItem("currentDayOverride", d);
+  }
+  closeDayPicker();
+  renderAll();
+}
+
+// ==================== INIT ====================
+function renderAll() {
+  renderHeader();
+  renderAnxiety();
+  renderDayBanner();
+  renderExercises();
+  renderMeals();
+  renderProtein();
+  renderMantras();
+}
+
+renderAll();
+</script>
+
+</body>
+</html>
