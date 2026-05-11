@@ -1,9 +1,11 @@
 import SwiftUI
 
 struct RootTabView: View {
+    @Environment(LocalAppState.self) private var state
+
     var body: some View {
         TabView {
-            Text("Today")
+            TodayView(state: state)
                 .tabItem { Label("Today", systemImage: "figure.strengthtraining.traditional") }
 
             Text("Food")
@@ -15,5 +17,6 @@ struct RootTabView: View {
             Text("Plan")
                 .tabItem { Label("Plan", systemImage: "book") }
         }
+        .tint(AppTheme.accent)
     }
 }
