@@ -31,6 +31,14 @@ final class WorkoutAppScaffoldTests: XCTestCase {
         XCTAssertTrue(planView.contains("ProgramSeed.weeklySchedule"))
     }
 
+    func testPlanGroceryReferenceUsesMergedGrocerySections() throws {
+        let planView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Plan/PlanView.swift"), encoding: .utf8)
+
+        XCTAssertTrue(planView.contains("GroceryListGenerator.generate(from: ProgramSeed.mealTemplates)"))
+        XCTAssertTrue(planView.contains("ForEach(section.items)"))
+        XCTAssertFalse(planView.contains("ForEach(section.ingredients"))
+    }
+
     func testLocalAppStateDoesNotExposeLegacyTopLevelQuickProteinAdds() throws {
         let localAppState = try String(contentsOfFile: sourcePath("WorkoutApp/Store/LocalAppState.swift"), encoding: .utf8)
 

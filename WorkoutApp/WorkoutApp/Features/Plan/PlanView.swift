@@ -29,6 +29,10 @@ struct PlanView: View {
             .sorted { $0.name < $1.name }
     }
 
+    private var groceryReferenceSections: [GrocerySection] {
+        GroceryListGenerator.generate(from: ProgramSeed.mealTemplates)
+    }
+
     var body: some View {
         NavigationStack {
             List {
@@ -136,10 +140,10 @@ struct PlanView: View {
 
     private var groceryReferenceSection: some View {
         Section("Grocery reference") {
-            ForEach(groceryCategoriesWithIngredients, id: \.category) { section in
+            ForEach(groceryReferenceSections) { section in
                 DisclosureGroup(section.category.rawValue) {
-                    ForEach(section.ingredients, id: \.id) { ingredient in
-                        LabeledContent(ingredient.name, value: ingredient.quantity)
+                    ForEach(section.items) { item in
+                        LabeledContent(item.name, value: item.quantity)
                     }
                 }
             }
@@ -151,27 +155,6 @@ struct PlanView: View {
             prepStep("Cook proteins", "Batch chicken, salmon, eggs, or another lean protein anchor.")
             prepStep("Prep carbs and produce", "Cook rice or potatoes, wash produce, and portion vegetables.")
             prepStep("Stage the week", "Pick meal templates in Grocery, shop once, and keep quick protein available.")
-        }
-    }
-
-    private var groceryCategoriesWithIngredients: [(category: GroceryCategory, ingredients: [Ingredient])] {
-        let ingredientsByCategory = Dictionary(grouping: ProgramSeed.mealTemplates.flatMap(\.ingredients), by: \.category)
-
-        return GroceryCategory.allCases.compactMap { category in
-            guard let ingredients = ingredientsByCategory[category], !ingredients.isEmpty else {
-                return nil
-            }
-
-            return (
-                category,
-                ingredients.sorted {
-                    if $0.name == $1.name {
-                        $0.quantity < $1.quantity
-                    } else {
-                        $0.name < $1.name
-                    }
-                }
-            )
         }
     }
 
