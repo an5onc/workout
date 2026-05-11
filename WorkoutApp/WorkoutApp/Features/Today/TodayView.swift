@@ -3,6 +3,7 @@ import SwiftUI
 struct TodayView: View {
     @Bindable var state: LocalAppState
     @State private var manuallyExpandedExerciseIDs: Set<String> = []
+    @State private var manuallyCollapsedExerciseIDs: Set<String> = []
     private let planner = WorkoutPlanner(schedule: ProgramSeed.weeklySchedule)
 
     var body: some View {
@@ -62,12 +63,17 @@ struct TodayView: View {
 
     private func expansionBinding(for exercise: Exercise, activeExerciseID: String?) -> Binding<Bool> {
         Binding {
-            exercise.id == activeExerciseID || manuallyExpandedExerciseIDs.contains(exercise.id)
+            if manuallyCollapsedExerciseIDs.contains(exercise.id) {
+                return false
+            }
+            return exercise.id == activeExerciseID || manuallyExpandedExerciseIDs.contains(exercise.id)
         } set: { isExpanded in
             if isExpanded {
                 manuallyExpandedExerciseIDs.insert(exercise.id)
+                manuallyCollapsedExerciseIDs.remove(exercise.id)
             } else {
                 manuallyExpandedExerciseIDs.remove(exercise.id)
+                manuallyCollapsedExerciseIDs.insert(exercise.id)
             }
         }
     }
