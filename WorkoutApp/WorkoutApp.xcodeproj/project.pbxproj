@@ -18,7 +18,9 @@
 		7EB4AF421E1360082FCCC805 /* WorkoutAppScaffoldTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F93BE1D12C0C4BD1F6CFBE6 /* WorkoutAppScaffoldTests.swift */; };
 		89B4B9E25004846A5F8A5F21 /* ProteinTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5239D2CA7B4C20EF5F2BC51A /* ProteinTrackerTests.swift */; };
 		8B7B4F151E95D0EF8BAB670C /* WorkoutPlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D830A6A20142E40AEAD9A46 /* WorkoutPlannerTests.swift */; };
+		B7048A09E21F92AB64EF3834 /* GroceryListGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81972276FEC3FE19B14118B /* GroceryListGenerator.swift */; };
 		F9E628E7F4FDED7FD901AEC3 /* WorkoutPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38360FAA657685AF1E733AD5 /* WorkoutPlanner.swift */; };
+		FB853EE811A4471AE564A859 /* GroceryListGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC40F6A3FFD454202CEF289 /* GroceryListGeneratorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,13 +47,16 @@
 		5239D2CA7B4C20EF5F2BC51A /* ProteinTrackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinTrackerTests.swift; sourceTree = "<group>"; };
 		523DE3D6E15F8272C81C43DF /* ProgramSeedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramSeedTests.swift; sourceTree = "<group>"; };
 		59D9874F60BE35004930E655 /* WorkoutAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = WorkoutAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DEC40F6A3FFD454202CEF289 /* GroceryListGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroceryListGeneratorTests.swift; sourceTree = "<group>"; };
 		E28E37477937D37BFD762CD8 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
+		E81972276FEC3FE19B14118B /* GroceryListGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroceryListGenerator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		07D879C7EB19D670762A3458 /* WorkoutAppTests */ = {
 			isa = PBXGroup;
 			children = (
+				DEC40F6A3FFD454202CEF289 /* GroceryListGeneratorTests.swift */,
 				523DE3D6E15F8272C81C43DF /* ProgramSeedTests.swift */,
 				5239D2CA7B4C20EF5F2BC51A /* ProteinTrackerTests.swift */,
 				2F93BE1D12C0C4BD1F6CFBE6 /* WorkoutAppScaffoldTests.swift */,
@@ -63,6 +68,7 @@
 		16D2847BF1561306330C51C6 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				E81972276FEC3FE19B14118B /* GroceryListGenerator.swift */,
 				02D76A85E7479E2DAD686A07 /* ProteinTracker.swift */,
 				38360FAA657685AF1E733AD5 /* WorkoutPlanner.swift */,
 			);
@@ -211,6 +217,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7048A09E21F92AB64EF3834 /* GroceryListGenerator.swift in Sources */,
 				676A9F3382FC35440B80B462 /* ProgramModels.swift in Sources */,
 				23FB6CE1DA910812D2C00CC6 /* ProgramSeed.swift in Sources */,
 				4EC9D87235A096DAF093D038 /* ProteinTracker.swift in Sources */,
@@ -225,6 +232,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB853EE811A4471AE564A859 /* GroceryListGeneratorTests.swift in Sources */,
 				49A84B76558B7D52B9C5475C /* ProgramSeedTests.swift in Sources */,
 				89B4B9E25004846A5F8A5F21 /* ProteinTrackerTests.swift in Sources */,
 				7EB4AF421E1360082FCCC805 /* WorkoutAppScaffoldTests.swift in Sources */,
