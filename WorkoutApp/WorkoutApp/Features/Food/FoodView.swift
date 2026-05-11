@@ -2,17 +2,22 @@ import SwiftUI
 
 struct FoodView: View {
     let state: LocalAppState
+    @State private var today = Date()
 
-    private var selectedMeals: [MealTemplate] {
-        state.selectedMeals(from: ProgramSeed.mealTemplates)
+    private var todaysLog: FoodLog {
+        state.foodLog(for: today)
+    }
+
+    private var checkedMeals: [MealTemplate] {
+        state.selectedFoodMeals(from: ProgramSeed.mealTemplates, date: today)
     }
 
     private var selectedMealProteinTotal: Int {
-        selectedMeals.reduce(0) { $0 + $1.proteinGrams }
+        checkedMeals.reduce(0) { $0 + $1.proteinGrams }
     }
 
     private var totalProtein: Int {
-        ProteinTracker.totalProtein(meals: selectedMeals, quickAdds: state.quickProteinAdds)
+        ProteinTracker.totalProtein(meals: checkedMeals, quickAdds: todaysLog.quickProteinAdds)
     }
 
     private var proteinProgress: Double {
@@ -24,7 +29,8 @@ struct FoodView: View {
             List {
                 targetSection
                 quickProteinSection
-                selectedMealsSection
+                mealChecklistSection
+                checkedMealsSection
             }
             .navigationTitle("Food")
         }
@@ -66,37 +72,58 @@ struct FoodView: View {
             HStack {
                 ForEach([10, 20, 25], id: \.self) { grams in
                     Button("+\(grams)g") {
-                        state.quickProteinAdds.append(grams)
+                        state.addQuickProtein(grams, date: today)
                     }
                     .buttonStyle(.bordered)
                 }
             }
             .padding(.vertical, 4)
 
-            if state.quickProteinAdds.isEmpty {
+            if todaysLog.quickProteinAdds.isEmpty {
                 Text("No quick protein added")
                     .foregroundStyle(.secondary)
             } else {
                 LabeledContent("Quick add total", value: "\(quickProteinTotal)g")
 
                 Button("Remove last quick add") {
-                    _ = state.quickProteinAdds.popLast()
+                    state.removeLastQuickProteinAdd(date: today)
                 }
 
                 Button("Clear quick adds", role: .destructive) {
-                    state.quickProteinAdds.removeAll()
+                    state.clearQuickProteinAdds(date: today)
                 }
             }
         }
     }
 
-    private var selectedMealsSection: some View {
-        Section("Selected meals") {
-            if selectedMeals.isEmpty {
-                Text("Choose meals in Grocery to populate today's food plan.")
+    private var mealChecklistSection: some View {
+        ForEach(MealKind.allCases) { kind in
+            let meals = ProgramSeed.mealTemplates.filter { $0.kind == kind }
+            if !meals.isEmpty {
+                Section(mealKindTitle(kind)) {
+                    ForEach(meals) { meal in
+                        Toggle(isOn: foodMealBinding(for: meal)) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(meal.name)
+                                    .font(.headline)
+                                Text("\(meal.calories) cal | \(meal.proteinGrams)g protein")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var checkedMealsSection: some View {
+        Section("Today's checked meals") {
+            if checkedMeals.isEmpty {
+                Text("Check meals above to count them toward today's protein.")
                     .foregroundStyle(.secondary)
             } else {
-                ForEach(selectedMeals) { meal in
+                ForEach(checkedMeals) { meal in
                     VStack(alignment: .leading, spacing: 8) {
                         HStack(alignment: .firstTextBaseline) {
                             VStack(alignment: .leading, spacing: 4) {
@@ -129,7 +156,15 @@ struct FoodView: View {
     }
 
     private var quickProteinTotal: Int {
-        state.quickProteinAdds.reduce(0, +)
+        todaysLog.quickProteinAdds.reduce(0, +)
+    }
+
+    private func foodMealBinding(for meal: MealTemplate) -> Binding<Bool> {
+        Binding {
+            state.foodLog(for: today).checkedMealIDs.contains(meal.id)
+        } set: { isSelected in
+            state.toggleFoodMeal(meal.id, on: isSelected, date: today)
+        }
     }
 
     private func macroLabel(_ value: String, _ label: String) -> some View {

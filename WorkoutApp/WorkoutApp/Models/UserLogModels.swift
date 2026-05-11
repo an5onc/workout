@@ -16,3 +16,16 @@ struct SetProgress: Identifiable, Hashable, Codable {
         self.rpeText = rpeText
     }
 }
+
+struct FoodLog: Identifiable, Hashable, Codable {
+    var id: String { dateKey }
+    let dateKey: String
+    var checkedMealIDs: Set<String>
+    var quickProteinAdds: [Int]
+
+    init(dateKey: String, checkedMealIDs: Set<String> = [], quickProteinAdds: [Int] = []) {
+        self.dateKey = dateKey
+        self.checkedMealIDs = checkedMealIDs
+        self.quickProteinAdds = quickProteinAdds
+    }
+}

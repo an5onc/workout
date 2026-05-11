@@ -30,6 +30,9 @@ final class LocalAppStateTests: XCTestCase {
         state.selectedMealIDs = ["breakfast-a", "dinner-b"]
         state.checkedGroceryItemIDs = ["eggs", "rice"]
         state.quickProteinAdds = [25, 40]
+        state.foodLogs = [
+            FoodLog(dateKey: "2026-05-11", checkedMealIDs: ["protein-oatmeal"], quickProteinAdds: [10, 25])
+        ]
 
         let restored = LocalAppState(defaults: defaults)
 
@@ -38,6 +41,7 @@ final class LocalAppStateTests: XCTestCase {
         XCTAssertEqual(restored.selectedMealIDs, ["breakfast-a", "dinner-b"])
         XCTAssertEqual(restored.checkedGroceryItemIDs, ["eggs", "rice"])
         XCTAssertEqual(restored.quickProteinAdds, [25, 40])
+        XCTAssertEqual(restored.foodLogs, state.foodLogs)
     }
 
     func testToggleSetPersistsAndTogglesOff() {
@@ -62,6 +66,59 @@ final class LocalAppStateTests: XCTestCase {
         ]
 
         XCTAssertEqual(state.selectedMeals(from: templates).map(\.id), ["meal-2"])
+    }
+
+    func testFoodLogMealSelectionIsSeparateFromGroceryMealSelection() {
+        let state = LocalAppState(defaults: defaults)
+        let date = date(year: 2026, month: 5, day: 11)
+
+        state.selectedMealIDs = ["grocery-meal"]
+        state.toggleFoodMeal("food-meal", on: true, date: date)
+
+        XCTAssertEqual(state.selectedMealIDs, ["grocery-meal"])
+        XCTAssertEqual(state.foodLog(for: date).checkedMealIDs, ["food-meal"])
+    }
+
+    func testFoodQuickProteinAddsAreScopedByDate() {
+        let state = LocalAppState(defaults: defaults)
+        let today = date(year: 2026, month: 5, day: 11)
+        let yesterday = date(year: 2026, month: 5, day: 10)
+
+        state.addQuickProtein(25, date: yesterday)
+        state.addQuickProtein(10, date: today)
+        state.addQuickProtein(20, date: today)
+
+        XCTAssertEqual(state.foodLog(for: yesterday).quickProteinAdds, [25])
+        XCTAssertEqual(state.foodLog(for: today).quickProteinAdds, [10, 20])
+
+        state.removeLastQuickProteinAdd(date: today)
+
+        XCTAssertEqual(state.foodLog(for: yesterday).quickProteinAdds, [25])
+        XCTAssertEqual(state.foodLog(for: today).quickProteinAdds, [10])
+
+        state.clearQuickProteinAdds(date: today)
+
+        XCTAssertEqual(state.foodLog(for: yesterday).quickProteinAdds, [25])
+        XCTAssertEqual(state.foodLog(for: today).quickProteinAdds, [])
+    }
+
+    func testFoodLogsPersistByDateWithoutBreakingGroceryState() {
+        let state = LocalAppState(defaults: defaults)
+        let today = date(year: 2026, month: 5, day: 11)
+        let yesterday = date(year: 2026, month: 5, day: 10)
+        state.selectedMealIDs = ["grocery-meal"]
+        state.checkedGroceryItemIDs = ["rice"]
+        state.toggleFoodMeal("today-meal", on: true, date: today)
+        state.addQuickProtein(20, date: today)
+        state.addQuickProtein(30, date: yesterday)
+
+        let restored = LocalAppState(defaults: defaults)
+
+        XCTAssertEqual(restored.selectedMealIDs, ["grocery-meal"])
+        XCTAssertEqual(restored.checkedGroceryItemIDs, ["rice"])
+        XCTAssertEqual(restored.foodLog(for: today).checkedMealIDs, ["today-meal"])
+        XCTAssertEqual(restored.foodLog(for: today).quickProteinAdds, [20])
+        XCTAssertEqual(restored.foodLog(for: yesterday).quickProteinAdds, [30])
     }
 
     func testRestoreDoesNotRewriteSnapshotDuringInit() throws {
@@ -94,6 +151,10 @@ final class LocalAppStateTests: XCTestCase {
             carbsGrams: 50,
             ingredients: []
         )
+    }
+
+    private func date(year: Int, month: Int, day: Int) -> Date {
+        DateComponents(calendar: Calendar.current, year: year, month: month, day: day, hour: 12).date!
     }
 }
 
