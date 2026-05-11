@@ -33,5 +33,17 @@ targets:
     sources:
       - path: WorkoutAppTests
         optional: true
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: WorkoutApp
+schemes:
+  WorkoutApp:
+    build:
+      targets:
+        WorkoutApp: all
+        WorkoutAppTests: [test]
+    test:
+      targets:
+        - WorkoutAppTests
