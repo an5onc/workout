@@ -12,9 +12,11 @@
 		2CD05DF0BE34C4716D2B344B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 14C43064353C47412352616A /* Assets.xcassets */; };
 		477B83E0FA8B462A02D6B27D /* WorkoutApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E683E77D158F57A447DF81 /* WorkoutApp.swift */; };
 		49A84B76558B7D52B9C5475C /* ProgramSeedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523DE3D6E15F8272C81C43DF /* ProgramSeedTests.swift */; };
+		4EC9D87235A096DAF093D038 /* ProteinTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D76A85E7479E2DAD686A07 /* ProteinTracker.swift */; };
 		6074CA527906301CCF2DBA49 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28E37477937D37BFD762CD8 /* RootTabView.swift */; };
 		676A9F3382FC35440B80B462 /* ProgramModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0749F37722C2D657C343DDB3 /* ProgramModels.swift */; };
 		7EB4AF421E1360082FCCC805 /* WorkoutAppScaffoldTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F93BE1D12C0C4BD1F6CFBE6 /* WorkoutAppScaffoldTests.swift */; };
+		89B4B9E25004846A5F8A5F21 /* ProteinTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5239D2CA7B4C20EF5F2BC51A /* ProteinTrackerTests.swift */; };
 		8B7B4F151E95D0EF8BAB670C /* WorkoutPlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D830A6A20142E40AEAD9A46 /* WorkoutPlannerTests.swift */; };
 		F9E628E7F4FDED7FD901AEC3 /* WorkoutPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38360FAA657685AF1E733AD5 /* WorkoutPlanner.swift */; };
 /* End PBXBuildFile section */
@@ -30,6 +32,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		02D76A85E7479E2DAD686A07 /* ProteinTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinTracker.swift; sourceTree = "<group>"; };
 		06E683E77D158F57A447DF81 /* WorkoutApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutApp.swift; sourceTree = "<group>"; };
 		0749F37722C2D657C343DDB3 /* ProgramModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramModels.swift; sourceTree = "<group>"; };
 		0D830A6A20142E40AEAD9A46 /* WorkoutPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutPlannerTests.swift; sourceTree = "<group>"; };
@@ -39,6 +42,7 @@
 		2F93BE1D12C0C4BD1F6CFBE6 /* WorkoutAppScaffoldTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutAppScaffoldTests.swift; sourceTree = "<group>"; };
 		38360FAA657685AF1E733AD5 /* WorkoutPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutPlanner.swift; sourceTree = "<group>"; };
 		422D09EB801CE5BA0EDFBA28 /* WorkoutApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = WorkoutApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5239D2CA7B4C20EF5F2BC51A /* ProteinTrackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinTrackerTests.swift; sourceTree = "<group>"; };
 		523DE3D6E15F8272C81C43DF /* ProgramSeedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramSeedTests.swift; sourceTree = "<group>"; };
 		59D9874F60BE35004930E655 /* WorkoutAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = WorkoutAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E28E37477937D37BFD762CD8 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
@@ -49,6 +53,7 @@
 			isa = PBXGroup;
 			children = (
 				523DE3D6E15F8272C81C43DF /* ProgramSeedTests.swift */,
+				5239D2CA7B4C20EF5F2BC51A /* ProteinTrackerTests.swift */,
 				2F93BE1D12C0C4BD1F6CFBE6 /* WorkoutAppScaffoldTests.swift */,
 				0D830A6A20142E40AEAD9A46 /* WorkoutPlannerTests.swift */,
 			);
@@ -58,6 +63,7 @@
 		16D2847BF1561306330C51C6 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				02D76A85E7479E2DAD686A07 /* ProteinTracker.swift */,
 				38360FAA657685AF1E733AD5 /* WorkoutPlanner.swift */,
 			);
 			path = Core;
@@ -207,6 +213,7 @@
 			files = (
 				676A9F3382FC35440B80B462 /* ProgramModels.swift in Sources */,
 				23FB6CE1DA910812D2C00CC6 /* ProgramSeed.swift in Sources */,
+				4EC9D87235A096DAF093D038 /* ProteinTracker.swift in Sources */,
 				6074CA527906301CCF2DBA49 /* RootTabView.swift in Sources */,
 				274A7A5B8A58C7EF1785BA78 /* UserLogModels.swift in Sources */,
 				477B83E0FA8B462A02D6B27D /* WorkoutApp.swift in Sources */,
@@ -219,6 +226,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				49A84B76558B7D52B9C5475C /* ProgramSeedTests.swift in Sources */,
+				89B4B9E25004846A5F8A5F21 /* ProteinTrackerTests.swift in Sources */,
 				7EB4AF421E1360082FCCC805 /* WorkoutAppScaffoldTests.swift in Sources */,
 				8B7B4F151E95D0EF8BAB670C /* WorkoutPlannerTests.swift in Sources */,
 			);
