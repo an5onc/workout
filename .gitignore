@@ -1,0 +1,6 @@
+.superpowers/
+.DS_Store
+DerivedData/
+WorkoutApp/*.xcworkspace
+WorkoutApp/WorkoutApp.xcodeproj/xcuserdata/
+WorkoutApp/WorkoutApp.xcodeproj/project.xcworkspace/xcuserdata/
