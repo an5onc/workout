@@ -8,10 +8,10 @@ struct RootTabView: View {
             TodayView(state: state)
                 .tabItem { Label("Today", systemImage: "figure.strengthtraining.traditional") }
 
-            Text("Food")
+            FoodView(state: state)
                 .tabItem { Label("Food", systemImage: "fork.knife") }
 
-            Text("Grocery")
+            GroceryView(state: state)
                 .tabItem { Label("Grocery", systemImage: "cart") }
 
             Text("Plan")
