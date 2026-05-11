@@ -12,9 +12,9 @@ final class LocalAppState {
         var quickProteinAdds: [Int]
     }
 
-    private let defaults: UserDefaults
-    private let storageKey = "workout.localAppState.v1"
-    private var isRestoring = false
+    @ObservationIgnored private let defaults: UserDefaults
+    @ObservationIgnored private let storageKey = "workout.localAppState.v1"
+    @ObservationIgnored private var isRestoring = false
 
     var selectedDayOverride: Weekday? { didSet { save() } }
     var setProgress: [SetProgress] { didSet { save() } }
