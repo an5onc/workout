@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TodayView: View {
     @Bindable var state: LocalAppState
+    @State private var manuallyExpandedExerciseIDs: Set<String> = []
     private let planner = WorkoutPlanner(schedule: ProgramSeed.weeklySchedule)
 
     var body: some View {
@@ -16,7 +17,11 @@ struct TodayView: View {
                     } else {
                         let active = planner.activeExercise(in: workout, progress: state.setProgress)
                         ForEach(workout.exercises) { exercise in
-                            ExerciseCardView(exercise: exercise, isActive: exercise.id == active?.id, state: state)
+                            ExerciseCardView(
+                                exercise: exercise,
+                                isExpanded: expansionBinding(for: exercise, activeExerciseID: active?.id),
+                                state: state
+                            )
                         }
                     }
                 }
@@ -53,6 +58,18 @@ struct TodayView: View {
         .padding()
         .background(.background)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func expansionBinding(for exercise: Exercise, activeExerciseID: String?) -> Binding<Bool> {
+        Binding {
+            exercise.id == activeExerciseID || manuallyExpandedExerciseIDs.contains(exercise.id)
+        } set: { isExpanded in
+            if isExpanded {
+                manuallyExpandedExerciseIDs.insert(exercise.id)
+            } else {
+                manuallyExpandedExerciseIDs.remove(exercise.id)
+            }
+        }
     }
 
     private func currentWeekday() -> Weekday {

@@ -2,11 +2,11 @@ import SwiftUI
 
 struct ExerciseCardView: View {
     let exercise: Exercise
-    let isActive: Bool
+    @Binding var isExpanded: Bool
     @Bindable var state: LocalAppState
 
     var body: some View {
-        DisclosureGroup(isExpanded: .constant(isActive)) {
+        DisclosureGroup(isExpanded: $isExpanded) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     ForEach(0..<exercise.sets, id: \.self) { setIndex in
