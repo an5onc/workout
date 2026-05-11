@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TodayView: View {
-    @Bindable var state: LocalAppState
+    let state: LocalAppState
     @State private var manuallyExpandedExerciseIDs: Set<String> = []
     @State private var manuallyCollapsedExerciseIDs: Set<String> = []
     @State private var lastActiveExerciseID: String?
