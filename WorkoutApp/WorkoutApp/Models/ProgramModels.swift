@@ -23,6 +23,14 @@ enum GroceryCategory: String, CaseIterable, Identifiable, Codable {
     var id: String { rawValue }
 }
 
+struct NutritionTargets: Hashable, Codable {
+    let calories: Int
+    let proteinGrams: Int
+    let fatGrams: Int
+    let carbsGrams: Int
+    let waterOunces: Int
+}
+
 struct Exercise: Identifiable, Hashable, Codable {
     let id: String
     let name: String
@@ -57,6 +65,9 @@ struct MealTemplate: Identifiable, Hashable, Codable {
     let kind: MealKind
     let name: String
     let detail: String
+    let calories: Int
     let proteinGrams: Int
+    let fatGrams: Int
+    let carbsGrams: Int
     let ingredients: [Ingredient]
 }

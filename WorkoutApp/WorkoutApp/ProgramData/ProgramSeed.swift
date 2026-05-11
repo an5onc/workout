@@ -1,7 +1,7 @@
 import Foundation
 
 enum ProgramSeed {
-    static let nutritionTargets = (calories: 1600, protein: 145, fat: 50, carbs: 145, waterOunces: 100)
+    static let nutritionTargets = NutritionTargets(calories: 1600, proteinGrams: 145, fatGrams: 50, carbsGrams: 145, waterOunces: 100)
 
     static let weeklySchedule: [WorkoutDay] = [
         WorkoutDay(id: .sunday, name: "Rest day + meal prep", focus: "Rest", subtitle: "Full rest. Sunday meal prep day.", isRestDay: true, exercises: []),
@@ -47,33 +47,33 @@ enum ProgramSeed {
     ]
 
     static let mealTemplates: [MealTemplate] = [
-        meal("protein-oatmeal", .breakfast, "Protein Oatmeal", "Oats, whey, peanut butter, banana, cinnamon.", 31, [
+        meal("protein-oatmeal", .breakfast, "Protein Oatmeal", "Oats, whey, peanut butter, banana, cinnamon.", 410, 31, 11, 48, [
             ingredient("rolled-oats", "Rolled oats", "1/2 cup", .pantry),
             ingredient("whey-protein", "Whey protein", "1 scoop", .supplementsExtras),
             ingredient("natural-peanut-butter", "Natural peanut butter", "1 tbsp", .pantry),
             ingredient("banana", "Banana", "1/2", .produce)
         ]),
-        meal("greek-yogurt-power-bowl", .breakfast, "Greek Yogurt Power Bowl", "Greek yogurt, berries, honey, granola, chia.", 28, [
+        meal("greek-yogurt-power-bowl", .breakfast, "Greek Yogurt Power Bowl", "Greek yogurt, berries, honey, granola, chia.", 340, 28, 8, 42, [
             ingredient("greek-yogurt", "Non-fat Greek yogurt", "1 cup", .dairyEggs),
             ingredient("berries", "Mixed berries", "1/2 cup", .produce),
             ingredient("honey", "Honey", "1 tbsp", .pantry),
             ingredient("granola", "Granola", "2 tbsp", .pantry),
             ingredient("chia-seeds", "Chia seeds", "1 tbsp", .pantry)
         ]),
-        meal("chicken-rice-power-bowl", .lunch, "Chicken & Rice Power Bowl", "Chicken breast, rice, broccoli, olive oil, lemon.", 42, [
+        meal("chicken-rice-power-bowl", .lunch, "Chicken & Rice Power Bowl", "Chicken breast, rice, broccoli, olive oil, lemon.", 470, 42, 14, 38, [
             ingredient("chicken-breast", "Boneless skinless chicken breast", "5 oz", .meatSeafood),
             ingredient("jasmine-rice", "Jasmine rice", "1/2 cup cooked", .pantry),
             ingredient("broccoli", "Broccoli", "1 cup", .produce),
             ingredient("olive-oil", "Olive oil", "1 tbsp", .pantry),
             ingredient("lemon", "Lemon", "1", .produce)
         ]),
-        meal("sheet-pan-salmon-veg", .dinner, "Sheet-Pan Salmon & Veg", "Salmon, zucchini, bell peppers, sweet potato.", 35, [
+        meal("sheet-pan-salmon-veg", .dinner, "Sheet-Pan Salmon & Veg", "Salmon, zucchini, bell peppers, sweet potato.", 470, 35, 22, 32, [
             ingredient("salmon", "Salmon fillet", "5 oz", .meatSeafood),
             ingredient("zucchini", "Zucchini", "1 cup", .produce),
             ingredient("bell-peppers", "Bell peppers", "1 cup", .produce),
             ingredient("sweet-potato", "Sweet potato", "1/2", .produce)
         ]),
-        meal("protein-shake", .snack, "Protein Shake", "Whey with water or almond milk.", 25, [
+        meal("protein-shake", .snack, "Protein Shake", "Whey with water or almond milk.", 120, 25, 1, 3, [
             ingredient("whey-protein", "Whey protein", "1 scoop", .supplementsExtras),
             ingredient("almond-milk", "Unsweetened almond milk", "1 cup", .dairyEggs)
         ])
@@ -98,8 +98,28 @@ enum ProgramSeed {
         )
     }
 
-    private static func meal(_ id: String, _ kind: MealKind, _ name: String, _ detail: String, _ protein: Int, _ ingredients: [Ingredient]) -> MealTemplate {
-        MealTemplate(id: id, kind: kind, name: name, detail: detail, proteinGrams: protein, ingredients: ingredients)
+    private static func meal(
+        _ id: String,
+        _ kind: MealKind,
+        _ name: String,
+        _ detail: String,
+        _ calories: Int,
+        _ protein: Int,
+        _ fat: Int,
+        _ carbs: Int,
+        _ ingredients: [Ingredient]
+    ) -> MealTemplate {
+        MealTemplate(
+            id: id,
+            kind: kind,
+            name: name,
+            detail: detail,
+            calories: calories,
+            proteinGrams: protein,
+            fatGrams: fat,
+            carbsGrams: carbs,
+            ingredients: ingredients
+        )
     }
 
     private static func ingredient(_ id: String, _ name: String, _ quantity: String, _ category: GroceryCategory) -> Ingredient {

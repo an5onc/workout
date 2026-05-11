@@ -27,4 +27,31 @@ final class ProgramSeedTests: XCTestCase {
         XCTAssertTrue(ProgramSeed.mealTemplates.contains { $0.name == "Chicken & Rice Power Bowl" })
         XCTAssertTrue(ProgramSeed.mealTemplates.allSatisfy { !$0.ingredients.isEmpty })
     }
+
+    func testNutritionTargetsAreTyped() {
+        let targets: NutritionTargets = ProgramSeed.nutritionTargets
+
+        XCTAssertEqual(targets.calories, 1600)
+        XCTAssertEqual(targets.proteinGrams, 145)
+        XCTAssertEqual(targets.fatGrams, 50)
+        XCTAssertEqual(targets.carbsGrams, 145)
+        XCTAssertEqual(targets.waterOunces, 100)
+    }
+
+    func testMealTemplatesIncludeStructuredMacros() throws {
+        let oatmeal = try XCTUnwrap(ProgramSeed.mealTemplates.first { $0.name == "Protein Oatmeal" })
+
+        XCTAssertEqual(oatmeal.calories, 410)
+        XCTAssertEqual(oatmeal.proteinGrams, 31)
+        XCTAssertEqual(oatmeal.fatGrams, 11)
+        XCTAssertEqual(oatmeal.carbsGrams, 48)
+    }
+
+    func testMealTemplatesIncludeGroceryCategoryAndQuantity() throws {
+        let chickenBowl = try XCTUnwrap(ProgramSeed.mealTemplates.first { $0.name == "Chicken & Rice Power Bowl" })
+        let chicken = try XCTUnwrap(chickenBowl.ingredients.first { $0.id == "chicken-breast" })
+
+        XCTAssertEqual(chicken.category, .meatSeafood)
+        XCTAssertEqual(chicken.quantity, "5 oz")
+    }
 }
