@@ -12,6 +12,7 @@ struct TodayView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     let workout = planner.workout(for: currentWeekday(), override: state.selectedDayOverride) ?? ProgramSeed.weeklySchedule[1]
+                    brandBanner
                     header(for: workout)
 
                     if workout.isRestDay {
@@ -41,6 +42,18 @@ struct TodayView: View {
             .background(AppTheme.cream)
             .navigationTitle("Today")
         }
+    }
+
+    private var brandBanner: some View {
+        Image("BrandWordmark")
+            .resizable()
+            .scaledToFit()
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity)
+            .background(Color(red: 0.118, green: 0.118, blue: 0.11))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .accessibilityLabel("I'd Lift That")
     }
 
     private func header(for workout: WorkoutDay) -> some View {
