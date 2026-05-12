@@ -102,6 +102,112 @@ enum ProgramSeed {
             formCues: [cue, "Brace your core.", "Control the lowering phase."],
             mistakes: ["Using momentum.", "Letting form break down."],
             feel: "Target muscles working without sharp pain.",
+            demoURL: URL(string: "https://www.youtube.com/results?search_query=\(name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? name)+proper+form"),
+            substitutions: substitutions(for: id)
+        )
+    }
+
+    private static func substitutions(for exerciseID: String) -> [ExerciseSubstitution] {
+        switch exerciseID {
+        case "barbell-hip-thrust":
+            return [
+                substitution("smith-machine-hip-thrust", "Smith Machine Hip Thrust", "Smith machine", "Glutes", "Set the bar over the hips and lock out with a hard glute squeeze."),
+                substitution("machine-glute-bridge", "Machine Glute Bridge", "Glute bridge machine", "Glutes", "Keep ribs down and pause at the top."),
+                substitution("db-hip-thrust", "DB Hip Thrust", "Dumbbell + bench", "Glutes", "Hold the dumbbell steady and drive through the heels.")
+            ]
+        case "heel-elevated-goblet-squat":
+            return [
+                substitution("leg-press", "Leg Press", "Leg press", "Quads", "Place feet lower on the platform and keep the range controlled."),
+                substitution("smith-machine-squat", "Smith Machine Squat", "Smith machine", "Quads", "Use a narrow stance and keep knees tracking over toes.")
+            ]
+        case "db-walking-lunge":
+            return [
+                substitution("db-reverse-lunge", "DB Reverse Lunge", "Dumbbells", "Glutes and quads", "Step back and keep the front foot planted."),
+                substitution("split-squat", "Split Squat", "Dumbbells", "Glutes and quads", "Stay tall and move straight down.")
+            ]
+        case "leg-extension-machine":
+            return [
+                substitution("spanish-squat", "Spanish Squat", "Band", "Quads", "Sit back against the band and keep the torso tall."),
+                substitution("sissy-squat-assisted", "Assisted Sissy Squat", "Rack or rail", "Quads", "Use support and keep tension in the quads.")
+            ]
+        case "db-bench-press":
+            return [
+                substitution("machine-chest-press", "Machine Chest Press", "Chest press machine", "Chest", "Set handles mid-chest and control the return."),
+                substitution("push-up", "Push-Up", "Bodyweight", "Chest", "Keep ribs down and stop a rep before form breaks."),
+                substitution("smith-machine-bench-press", "Smith Machine Bench Press", "Smith machine", "Chest", "Set the bench so the bar tracks over mid-chest.")
+            ]
+        case "seated-db-shoulder-press":
+            return [
+                substitution("machine-shoulder-press", "Machine Shoulder Press", "Shoulder press machine", "Shoulders", "Keep elbows slightly in front of the body."),
+                substitution("standing-landmine-press", "Standing Landmine Press", "Landmine", "Shoulders", "Press up and forward without leaning back.")
+            ]
+        case "cable-lateral-raise":
+            return [
+                substitution("db-lateral-raise", "DB Lateral Raise", "Dumbbells", "Side delts", "Lead with elbows and stop around shoulder height."),
+                substitution("machine-lateral-raise", "Machine Lateral Raise", "Lateral raise machine", "Side delts", "Keep shoulders down and move smoothly.")
+            ]
+        case "barbell-romanian-deadlift":
+            return [
+                substitution("db-romanian-deadlift", "DB Romanian Deadlift", "Dumbbells", "Hamstrings and glutes", "Push hips back and keep the weights close."),
+                substitution("smith-machine-romanian-deadlift", "Smith Machine Romanian Deadlift", "Smith machine", "Hamstrings and glutes", "Use a soft knee and stop when hamstrings stretch.")
+            ]
+        case "cable-glute-kickback":
+            return [
+                substitution("machine-glute-kickback", "Machine Glute Kickback", "Glute kickback machine", "Glutes", "Pause with the glute squeezed."),
+                substitution("banded-glute-kickback", "Banded Glute Kickback", "Band", "Glutes", "Keep hips square and move slowly.")
+            ]
+        case "db-bulgarian-split-squat":
+            return [
+                substitution("smith-machine-split-squat", "Smith Machine Split Squat", "Smith machine", "Glutes and quads", "Set the front foot far enough to stay stable."),
+                substitution("reverse-lunge", "Reverse Lunge", "Dumbbells", "Glutes and quads", "Step back and drive through the front heel.")
+            ]
+        case "seated-hamstring-curl":
+            return [
+                substitution("lying-hamstring-curl", "Lying Hamstring Curl", "Hamstring curl machine", "Hamstrings", "Keep hips down and control the lower."),
+                substitution("stability-ball-hamstring-curl", "Stability Ball Hamstring Curl", "Stability ball", "Hamstrings", "Keep hips lifted through the curl.")
+            ]
+        case "lat-pulldown":
+            return [
+                substitution("assisted-pull-up-machine", "Assisted Pull-Up Machine", "Assisted pull-up machine", "Lats", "Pull elbows toward ribs and avoid shrugging."),
+                substitution("straight-arm-pulldown", "Straight-Arm Pulldown", "Cable", "Lats", "Keep arms mostly straight and sweep toward thighs.")
+            ]
+        case "seated-cable-row":
+            return [
+                substitution("chest-supported-row", "Chest-Supported Row", "Machine or incline bench", "Upper back", "Drive elbows back and keep chest supported."),
+                substitution("machine-row", "Machine Row", "Row machine", "Upper back", "Pause with shoulder blades squeezed.")
+            ]
+        case "db-single-arm-row":
+            return [
+                substitution("cable-single-arm-row", "Cable Single-Arm Row", "Cable", "Back", "Pull the elbow toward the hip."),
+                substitution("machine-high-row", "Machine High Row", "High row machine", "Back", "Keep ribs down and pull through elbows.")
+            ]
+        case "smith-machine-hip-thrust":
+            return [
+                substitution("barbell-hip-thrust", "Barbell Hip Thrust", "Barbell + bench", "Glutes", "Pad the bar and lock out with control."),
+                substitution("machine-glute-bridge", "Machine Glute Bridge", "Glute bridge machine", "Glutes", "Keep the top pause strict.")
+            ]
+        case "db-sumo-deadlift":
+            return [
+                substitution("kettlebell-sumo-deadlift", "Kettlebell Sumo Deadlift", "Kettlebell", "Glutes and hamstrings", "Drive knees out and stand tall."),
+                substitution("cable-pull-through", "Cable Pull-Through", "Cable", "Glutes and hamstrings", "Hinge back and squeeze through the hips.")
+            ]
+        case "db-step-up":
+            return [
+                substitution("leg-press-single-leg", "Single-Leg Leg Press", "Leg press", "Glutes and quads", "Drive through one heel and avoid locking the knee."),
+                substitution("db-reverse-lunge", "DB Reverse Lunge", "Dumbbells", "Glutes and quads", "Use the front leg to pull back up.")
+            ]
+        default:
+            return []
+        }
+    }
+
+    private static func substitution(_ id: String, _ name: String, _ equipment: String, _ target: String, _ cue: String) -> ExerciseSubstitution {
+        ExerciseSubstitution(
+            id: id,
+            name: name,
+            equipment: equipment,
+            target: target,
+            cue: cue,
             demoURL: URL(string: "https://www.youtube.com/results?search_query=\(name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? name)+proper+form")
         )
     }

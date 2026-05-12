@@ -91,6 +91,30 @@ final class LocalAppState {
         return workoutLogs.first { $0.dateKey == key } ?? WorkoutLog(dateKey: key)
     }
 
+    func selectSubstitution(exerciseID: String, substitutionID: String?, date: Date = Date()) {
+        var log = workoutLog(for: date)
+        if let substitutionID {
+            log.selectedSubstitutionIDs[exerciseID] = substitutionID
+        } else {
+            log.selectedSubstitutionIDs.removeValue(forKey: exerciseID)
+        }
+        upsertWorkoutLog(log)
+    }
+
+    func selectedSubstitutionID(exerciseID: String, date: Date = Date()) -> String? {
+        workoutLog(for: date).selectedSubstitutionIDs[exerciseID]
+    }
+
+    func finishWorkout(date: Date = Date()) {
+        var log = workoutLog(for: date)
+        log.finishedAt = date
+        upsertWorkoutLog(log)
+    }
+
+    func isWorkoutFinished(date: Date = Date()) -> Bool {
+        workoutLog(for: date).finishedAt != nil
+    }
+
     func lastPerformanceSummary(exerciseID: String, before date: Date = Date()) -> String? {
         let key = dateKey(for: date)
         let previousLogs = workoutLogs
@@ -223,6 +247,14 @@ final class LocalAppState {
         }
     }
 
+    private func upsertWorkoutLog(_ log: WorkoutLog) {
+        if let index = workoutLogs.firstIndex(where: { $0.dateKey == log.dateKey }) {
+            workoutLogs[index] = log
+        } else {
+            workoutLogs.append(log)
+        }
+    }
+
     private func ensureProgressIndex(for exerciseID: String) -> Int {
         if let index = setProgress.firstIndex(where: { $0.exerciseID == exerciseID }) {
             return index
@@ -253,12 +285,9 @@ final class LocalAppState {
 
     private func upsertWorkoutLog(for date: Date) {
         let key = dateKey(for: date)
-        let log = WorkoutLog(dateKey: key, setProgress: setProgress)
-        if let index = workoutLogs.firstIndex(where: { $0.dateKey == key }) {
-            workoutLogs[index] = log
-        } else {
-            workoutLogs.append(log)
-        }
+        var log = workoutLogs.first { $0.dateKey == key } ?? WorkoutLog(dateKey: key)
+        log.setProgress = setProgress
+        upsertWorkoutLog(log)
     }
 
     private func dateKey(for date: Date) -> String {

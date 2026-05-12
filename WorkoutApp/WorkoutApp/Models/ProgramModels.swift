@@ -37,6 +37,15 @@ struct QuickProteinAnchor: Identifiable, Hashable, Codable {
     let proteinGrams: Int
 }
 
+struct ExerciseSubstitution: Identifiable, Hashable, Codable {
+    let id: String
+    let name: String
+    let equipment: String
+    let target: String
+    let cue: String
+    let demoURL: URL?
+}
+
 struct Exercise: Identifiable, Hashable, Codable {
     let id: String
     let name: String
@@ -48,6 +57,7 @@ struct Exercise: Identifiable, Hashable, Codable {
     let mistakes: [String]
     let feel: String
     let demoURL: URL?
+    var substitutions: [ExerciseSubstitution] = []
 }
 
 struct WorkoutDay: Identifiable, Hashable, Codable {

@@ -20,6 +20,44 @@ struct WorkoutPlanner {
         }
         return nil
     }
+
+    static func summary(for workout: WorkoutDay, log: WorkoutLog) -> WorkoutSummary {
+        let totalSets = workout.exercises.reduce(0) { $0 + $1.sets }
+        var completedSets = 0
+        var totalVolume = 0.0
+
+        for exercise in workout.exercises {
+            guard let progress = log.setProgress.first(where: { $0.exerciseID == exercise.id }) else {
+                continue
+            }
+
+            let validSets = Set(0..<exercise.sets)
+            let completedEntries = progress.setEntries.filter { entry in
+                entry.isCompleted && validSets.contains(entry.setIndex)
+            }
+
+            if completedEntries.isEmpty {
+                completedSets += progress.completedSets.intersection(validSets).count
+            } else {
+                completedSets += completedEntries.count
+            }
+
+            for entry in completedEntries {
+                guard let weight = Double(entry.weightText.trimmingCharacters(in: .whitespacesAndNewlines)),
+                      let reps = Int(entry.repsText.trimmingCharacters(in: .whitespacesAndNewlines)) else {
+                    continue
+                }
+                totalVolume += weight * Double(reps)
+            }
+        }
+
+        return WorkoutSummary(
+            completedSets: completedSets,
+            totalSets: totalSets,
+            totalVolume: totalVolume,
+            isFinished: log.finishedAt != nil
+        )
+    }
 }
 
 enum WorkoutProgressAdvisor {

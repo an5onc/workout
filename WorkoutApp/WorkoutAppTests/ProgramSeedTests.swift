@@ -22,6 +22,19 @@ final class ProgramSeedTests: XCTestCase {
         XCTAssertEqual(lowerA.exercises.first?.repRange, "8-10")
     }
 
+    func testMajorExercisesIncludeSubstitutionsForBusyGymFlow() throws {
+        let allExercises = ProgramSeed.weeklySchedule.flatMap(\.exercises)
+        let hipThrust = try XCTUnwrap(allExercises.first { $0.id == "barbell-hip-thrust" })
+        let dbBench = try XCTUnwrap(allExercises.first { $0.id == "db-bench-press" })
+        let latPulldown = try XCTUnwrap(allExercises.first { $0.id == "lat-pulldown" })
+
+        XCTAssertGreaterThanOrEqual(hipThrust.substitutions.count, 2)
+        XCTAssertTrue(hipThrust.substitutions.contains { $0.name == "Smith Machine Hip Thrust" })
+        XCTAssertTrue(dbBench.substitutions.contains { $0.name == "Machine Chest Press" })
+        XCTAssertTrue(latPulldown.substitutions.contains { $0.name == "Assisted Pull-Up Machine" })
+        XCTAssertTrue([hipThrust, dbBench, latPulldown].flatMap(\.substitutions).allSatisfy { $0.demoURL != nil })
+    }
+
     func testMealTemplatesSupportGroceryBuilder() {
         XCTAssertTrue(ProgramSeed.mealTemplates.contains { $0.name == "Protein Oatmeal" })
         XCTAssertTrue(ProgramSeed.mealTemplates.contains { $0.name == "Chicken & Rice Power Bowl" })

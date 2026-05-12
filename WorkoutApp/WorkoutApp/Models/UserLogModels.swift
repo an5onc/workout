@@ -45,10 +45,45 @@ struct WorkoutLog: Identifiable, Hashable, Codable {
     var id: String { dateKey }
     let dateKey: String
     var setProgress: [SetProgress]
+    var finishedAt: Date?
+    var selectedSubstitutionIDs: [String: String]
 
-    init(dateKey: String, setProgress: [SetProgress] = []) {
+    init(
+        dateKey: String,
+        setProgress: [SetProgress] = [],
+        finishedAt: Date? = nil,
+        selectedSubstitutionIDs: [String: String] = [:]
+    ) {
         self.dateKey = dateKey
         self.setProgress = setProgress
+        self.finishedAt = finishedAt
+        self.selectedSubstitutionIDs = selectedSubstitutionIDs
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case dateKey
+        case setProgress
+        case finishedAt
+        case selectedSubstitutionIDs
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.dateKey = try container.decode(String.self, forKey: .dateKey)
+        self.setProgress = try container.decodeIfPresent([SetProgress].self, forKey: .setProgress) ?? []
+        self.finishedAt = try container.decodeIfPresent(Date.self, forKey: .finishedAt)
+        self.selectedSubstitutionIDs = try container.decodeIfPresent([String: String].self, forKey: .selectedSubstitutionIDs) ?? [:]
+    }
+}
+
+struct WorkoutSummary: Hashable {
+    let completedSets: Int
+    let totalSets: Int
+    let totalVolume: Double
+    let isFinished: Bool
+
+    var remainingSets: Int {
+        max(totalSets - completedSets, 0)
     }
 }
 

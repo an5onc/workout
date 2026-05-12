@@ -26,6 +26,7 @@ struct TodayView: View {
                                     state: state
                                 )
                             }
+                            finishSummary(for: workout)
                         }
                         .onAppear {
                             updateActiveExercise(active?.id)
@@ -55,6 +56,49 @@ struct TodayView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(AppTheme.accentSoft)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func finishSummary(for workout: WorkoutDay) -> some View {
+        let log = state.workoutLog(for: Date())
+        let summary = WorkoutPlanner.summary(for: workout, log: log)
+
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(summary.isFinished ? "Workout finished" : "Finish workout")
+                        .font(.headline)
+                    Text("\(summary.completedSets)/\(summary.totalSets) sets | \(formatVolume(summary.totalVolume)) lb volume")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: summary.isFinished ? "checkmark.seal.fill" : "flag.checkered")
+                    .font(.title2)
+                    .foregroundStyle(AppTheme.accent)
+            }
+
+            if summary.remainingSets > 0 {
+                Text("\(summary.remainingSets) sets left if she wants the full plan today.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("All planned sets are checked off.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            Button {
+                state.finishWorkout(date: Date())
+            } label: {
+                Label(summary.isFinished ? "Finished" : "Mark workout finished", systemImage: "checkmark.circle")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(summary.isFinished)
+        }
+        .padding()
+        .background(.background)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -98,5 +142,9 @@ struct TodayView: View {
     private func currentWeekday() -> Weekday {
         let weekday = Calendar.current.component(.weekday, from: Date())
         return Weekday.allCases[weekday - 1]
+    }
+
+    private func formatVolume(_ volume: Double) -> String {
+        volume.rounded() == volume ? String(Int(volume)) : String(format: "%.1f", volume)
     }
 }

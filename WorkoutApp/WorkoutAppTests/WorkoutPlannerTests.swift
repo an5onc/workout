@@ -106,4 +106,38 @@ final class WorkoutPlannerTests: XCTestCase {
 
         XCTAssertEqual(WorkoutProgressAdvisor.suggestion(for: exercise, progress: progress), "Next time: repeat 135 lb.")
     }
+
+    func testWorkoutSummaryCountsSetsAndVolume() throws {
+        let workout = WorkoutDay(
+            id: .monday,
+            name: "Lower A",
+            focus: "Lower",
+            subtitle: "Test",
+            isRestDay: false,
+            exercises: [
+                Exercise(id: "hip-thrust", name: "Hip Thrust", sets: 2, repRange: "8-10", rest: "90s", cue: "Drive.", formCues: [], mistakes: [], feel: "Glutes", demoURL: nil),
+                Exercise(id: "lunge", name: "Lunge", sets: 2, repRange: "10", rest: "60s", cue: "Step.", formCues: [], mistakes: [], feel: "Legs", demoURL: nil)
+            ]
+        )
+        let log = WorkoutLog(
+            dateKey: "2026-05-11",
+            setProgress: [
+                SetProgress(exerciseID: "hip-thrust", completedSets: [0, 1], setEntries: [
+                    SetEntry(setIndex: 0, weightText: "135", repsText: "10", isCompleted: true),
+                    SetEntry(setIndex: 1, weightText: "135", repsText: "8", isCompleted: true)
+                ]),
+                SetProgress(exerciseID: "lunge", completedSets: [0], setEntries: [
+                    SetEntry(setIndex: 0, weightText: "25", repsText: "10", isCompleted: true)
+                ])
+            ]
+        )
+
+        let summary = WorkoutPlanner.summary(for: workout, log: log)
+
+        XCTAssertEqual(summary.completedSets, 3)
+        XCTAssertEqual(summary.totalSets, 4)
+        XCTAssertEqual(summary.remainingSets, 1)
+        XCTAssertEqual(summary.totalVolume, 2680)
+        XCTAssertFalse(summary.isFinished)
+    }
 }

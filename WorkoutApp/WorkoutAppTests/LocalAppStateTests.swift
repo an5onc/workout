@@ -70,6 +70,32 @@ final class LocalAppStateTests: XCTestCase {
         XCTAssertEqual(restored.workoutLog(for: date).setProgress.first?.setEntries.first, entry)
     }
 
+    func testSelectedSubstitutionPersistsByDate() {
+        let state = LocalAppState(defaults: defaults)
+        let monday = date(year: 2026, month: 5, day: 11)
+        let tuesday = date(year: 2026, month: 5, day: 12)
+
+        state.selectSubstitution(exerciseID: "barbell-hip-thrust", substitutionID: "smith-machine-hip-thrust", date: monday)
+
+        let restored = LocalAppState(defaults: defaults)
+
+        XCTAssertEqual(restored.selectedSubstitutionID(exerciseID: "barbell-hip-thrust", date: monday), "smith-machine-hip-thrust")
+        XCTAssertNil(restored.selectedSubstitutionID(exerciseID: "barbell-hip-thrust", date: tuesday))
+    }
+
+    func testFinishingWorkoutPersistsByDate() {
+        let state = LocalAppState(defaults: defaults)
+        let monday = date(year: 2026, month: 5, day: 11)
+        let tuesday = date(year: 2026, month: 5, day: 12)
+
+        state.finishWorkout(date: monday)
+
+        let restored = LocalAppState(defaults: defaults)
+
+        XCTAssertTrue(restored.isWorkoutFinished(date: monday))
+        XCTAssertFalse(restored.isWorkoutFinished(date: tuesday))
+    }
+
     func testLastPerformanceSummaryUsesPreviousDate() {
         let state = LocalAppState(defaults: defaults)
         let today = date(year: 2026, month: 5, day: 18)

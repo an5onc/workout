@@ -17,6 +17,7 @@ struct ExerciseCardView: View {
         DisclosureGroup(isExpanded: $isExpanded) {
             VStack(alignment: .leading, spacing: 12) {
                 performanceContext(progress: progress)
+                substitutionSection
 
                 VStack(spacing: 8) {
                     ForEach(0..<exercise.sets, id: \.self) { setIndex in
@@ -103,6 +104,63 @@ struct ExerciseCardView: View {
             Text(WorkoutProgressAdvisor.suggestion(for: exercise, progress: progress))
                 .font(.footnote)
                 .foregroundStyle(AppTheme.accent)
+        }
+    }
+
+    @ViewBuilder
+    private var substitutionSection: some View {
+        if !exercise.substitutions.isEmpty {
+            let selectedID = state.selectedSubstitutionID(exerciseID: exercise.id, date: currentDate())
+            let selected = exercise.substitutions.first { $0.id == selectedID }
+
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Label("Machine taken?", systemImage: "arrow.triangle.2.circlepath")
+                        .font(.subheadline.weight(.semibold))
+                    Spacer()
+                    Menu {
+                        Button("Use planned exercise") {
+                            state.selectSubstitution(exerciseID: exercise.id, substitutionID: nil, date: currentDate())
+                        }
+
+                        ForEach(exercise.substitutions) { substitution in
+                            Button(substitution.name) {
+                                state.selectSubstitution(exerciseID: exercise.id, substitutionID: substitution.id, date: currentDate())
+                            }
+                        }
+                    } label: {
+                        Label(selected == nil ? "Swap" : "Change", systemImage: "slider.horizontal.3")
+                    }
+                    .buttonStyle(.bordered)
+                }
+
+                if let selected {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(selected.name)
+                            .font(.headline)
+                        Text("\(selected.equipment) | \(selected.target)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(selected.cue)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                        if let demoURL = selected.demoURL {
+                            Link(destination: demoURL) {
+                                Label("Sub demo", systemImage: "play.rectangle")
+                            }
+                            .font(.subheadline.weight(.semibold))
+                        }
+                    }
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(AppTheme.accentSoft)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                } else {
+                    Text(exercise.substitutions.map(\.name).joined(separator: " | "))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
     }
 
