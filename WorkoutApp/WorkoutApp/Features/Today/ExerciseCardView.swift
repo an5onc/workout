@@ -30,11 +30,11 @@ struct ExerciseCardView: View {
 
                             TextField("lb", text: weightBinding(for: setIndex))
                                 .keyboardType(.decimalPad)
-                                .textFieldStyle(.roundedBorder)
+                                .workoutTextField()
 
                             TextField("reps", text: repsBinding(for: setIndex))
                                 .keyboardType(.numberPad)
-                                .textFieldStyle(.roundedBorder)
+                                .workoutTextField()
 
                             Button {
                                 state.toggleSet(exerciseID: exercise.id, setIndex: setIndex, date: currentDate())
@@ -86,7 +86,7 @@ struct ExerciseCardView: View {
             }
         }
         .padding()
-        .background(.background)
+        .background(AppTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -153,7 +153,7 @@ struct ExerciseCardView: View {
                     }
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(AppTheme.accentSoft)
+                    .background(AppTheme.elevatedBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                 } else {
                     Text(exercise.substitutions.map(\.name).joined(separator: " | "))
@@ -221,5 +221,29 @@ struct ExerciseCardView: View {
             let entry = state.setEntry(exerciseID: exercise.id, setIndex: setIndex)
             state.updateSetEntry(exerciseID: exercise.id, setIndex: setIndex, weightText: entry.weightText, repsText: newValue, date: currentDate())
         }
+    }
+}
+
+private struct WorkoutTextFieldModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .textFieldStyle(.plain)
+            .font(.subheadline)
+            .foregroundStyle(.primary)
+            .tint(AppTheme.accent)
+            .padding(.horizontal, 8)
+            .frame(height: 34)
+            .background(AppTheme.elevatedBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 7))
+            .overlay {
+                RoundedRectangle(cornerRadius: 7)
+                    .stroke(.secondary.opacity(0.24), lineWidth: 1)
+            }
+    }
+}
+
+private extension View {
+    func workoutTextField() -> some View {
+        modifier(WorkoutTextFieldModifier())
     }
 }

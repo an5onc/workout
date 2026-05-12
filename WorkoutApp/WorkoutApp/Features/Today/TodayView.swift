@@ -39,7 +39,7 @@ struct TodayView: View {
                 }
                 .padding()
             }
-            .background(AppTheme.cream)
+            .background(AppTheme.screenBackground)
             .navigationTitle("Today")
         }
     }
@@ -51,7 +51,7 @@ struct TodayView: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity)
-            .background(Color(red: 0.118, green: 0.118, blue: 0.11))
+            .background(AppTheme.brandBackground)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .accessibilityLabel("I'd Lift That")
     }
@@ -111,7 +111,7 @@ struct TodayView: View {
             .disabled(summary.isFinished)
         }
         .padding()
-        .background(.background)
+        .background(AppTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -123,7 +123,7 @@ struct TodayView: View {
                 .foregroundStyle(.secondary)
         }
         .padding()
-        .background(.background)
+        .background(AppTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
