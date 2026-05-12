@@ -11,6 +11,8 @@ final class LocalAppState {
         var checkedGroceryItemIDs: Set<String>
         var quickProteinAdds: [Int]?
         var foodLogs: [FoodLog]?
+        var workoutLogs: [WorkoutLog]?
+        var weeklyCheckIns: [WeeklyCheckIn]?
     }
 
     @ObservationIgnored private let defaults: UserDefaults
@@ -22,6 +24,8 @@ final class LocalAppState {
     var selectedMealIDs: Set<String> { didSet { save() } }
     var checkedGroceryItemIDs: Set<String> { didSet { save() } }
     var foodLogs: [FoodLog] { didSet { save() } }
+    var workoutLogs: [WorkoutLog] { didSet { save() } }
+    var weeklyCheckIns: [WeeklyCheckIn] { didSet { save() } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -30,6 +34,8 @@ final class LocalAppState {
         self.selectedMealIDs = []
         self.checkedGroceryItemIDs = []
         self.foodLogs = []
+        self.workoutLogs = []
+        self.weeklyCheckIns = []
         restore()
     }
 
@@ -41,6 +47,10 @@ final class LocalAppState {
     }
 
     func toggleSet(exerciseID: String, setIndex: Int) {
+        toggleSet(exerciseID: exerciseID, setIndex: setIndex, date: Date())
+    }
+
+    func toggleSet(exerciseID: String, setIndex: Int, date: Date) {
         let index = setProgress.firstIndex { $0.exerciseID == exerciseID }
         if let index {
             if setProgress[index].completedSets.contains(setIndex) {
@@ -48,8 +58,84 @@ final class LocalAppState {
             } else {
                 setProgress[index].completedSets.insert(setIndex)
             }
+            syncSetEntryCompletion(exerciseProgressIndex: index, setIndex: setIndex)
         } else {
-            setProgress.append(SetProgress(exerciseID: exerciseID, completedSets: [setIndex]))
+            setProgress.append(SetProgress(
+                exerciseID: exerciseID,
+                completedSets: [setIndex],
+                setEntries: [SetEntry(setIndex: setIndex, isCompleted: true)]
+            ))
+        }
+        upsertWorkoutLog(for: date)
+    }
+
+    func setEntry(exerciseID: String, setIndex: Int) -> SetEntry {
+        progress(for: exerciseID).setEntries.first { $0.setIndex == setIndex } ?? SetEntry(setIndex: setIndex)
+    }
+
+    func updateSetEntry(exerciseID: String, setIndex: Int, weightText: String, repsText: String, date: Date = Date()) {
+        let progressIndex = ensureProgressIndex(for: exerciseID)
+        let existingCompletion = setProgress[progressIndex].completedSets.contains(setIndex)
+        let entry = SetEntry(
+            setIndex: setIndex,
+            weightText: weightText,
+            repsText: repsText,
+            isCompleted: existingCompletion
+        )
+        upsertSetEntry(entry, exerciseProgressIndex: progressIndex)
+        upsertWorkoutLog(for: date)
+    }
+
+    func workoutLog(for date: Date) -> WorkoutLog {
+        let key = dateKey(for: date)
+        return workoutLogs.first { $0.dateKey == key } ?? WorkoutLog(dateKey: key)
+    }
+
+    func lastPerformanceSummary(exerciseID: String, before date: Date = Date()) -> String? {
+        let key = dateKey(for: date)
+        let previousLogs = workoutLogs
+            .filter { $0.dateKey < key }
+            .sorted { $0.dateKey > $1.dateKey }
+
+        for log in previousLogs {
+            guard let progress = log.setProgress.first(where: { $0.exerciseID == exerciseID }) else { continue }
+            let completedEntries = progress.setEntries
+                .filter { $0.isCompleted && !$0.weightText.isEmpty && !$0.repsText.isEmpty }
+                .sorted { $0.setIndex < $1.setIndex }
+            guard let firstWeight = completedEntries.first?.weightText, !completedEntries.isEmpty else { continue }
+            let reps = completedEntries.map(\.repsText).joined(separator: ", ")
+            return "\(firstWeight) lb x \(reps)"
+        }
+        return nil
+    }
+
+    func weeklyCheckIn(for date: Date) -> WeeklyCheckIn {
+        let key = dateKey(for: date)
+        return weeklyCheckIns.first { $0.dateKey == key } ?? WeeklyCheckIn(dateKey: key)
+    }
+
+    func updateWeeklyCheckIn(
+        date: Date,
+        bodyWeightText: String,
+        waistText: String,
+        hipsText: String,
+        energy: Int,
+        soreness: Int,
+        notes: String
+    ) {
+        let checkIn = WeeklyCheckIn(
+            dateKey: dateKey(for: date),
+            bodyWeightText: bodyWeightText,
+            waistText: waistText,
+            hipsText: hipsText,
+            energy: min(max(energy, 1), 5),
+            soreness: min(max(soreness, 1), 5),
+            notes: notes
+        )
+        if let index = weeklyCheckIns.firstIndex(where: { $0.dateKey == checkIn.dateKey }) {
+            weeklyCheckIns[index] = checkIn
+        } else {
+            weeklyCheckIns.append(checkIn)
         }
     }
 
@@ -108,6 +194,8 @@ final class LocalAppState {
         selectedMealIDs = snapshot.selectedMealIDs
         checkedGroceryItemIDs = snapshot.checkedGroceryItemIDs
         foodLogs = snapshot.foodLogs ?? []
+        workoutLogs = snapshot.workoutLogs ?? []
+        weeklyCheckIns = snapshot.weeklyCheckIns ?? []
     }
 
     private func save() {
@@ -119,7 +207,9 @@ final class LocalAppState {
             selectedMealIDs: selectedMealIDs,
             checkedGroceryItemIDs: checkedGroceryItemIDs,
             quickProteinAdds: nil,
-            foodLogs: foodLogs
+            foodLogs: foodLogs,
+            workoutLogs: workoutLogs,
+            weeklyCheckIns: weeklyCheckIns
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         defaults.set(data, forKey: storageKey)
@@ -130,6 +220,44 @@ final class LocalAppState {
             foodLogs[index] = log
         } else {
             foodLogs.append(log)
+        }
+    }
+
+    private func ensureProgressIndex(for exerciseID: String) -> Int {
+        if let index = setProgress.firstIndex(where: { $0.exerciseID == exerciseID }) {
+            return index
+        }
+        setProgress.append(SetProgress(exerciseID: exerciseID))
+        return setProgress.count - 1
+    }
+
+    private func syncSetEntryCompletion(exerciseProgressIndex: Int, setIndex: Int) {
+        var entry = setProgress[exerciseProgressIndex].setEntries.first { $0.setIndex == setIndex } ?? SetEntry(setIndex: setIndex)
+        entry.isCompleted = setProgress[exerciseProgressIndex].completedSets.contains(setIndex)
+        upsertSetEntry(entry, exerciseProgressIndex: exerciseProgressIndex)
+    }
+
+    private func upsertSetEntry(_ entry: SetEntry, exerciseProgressIndex: Int) {
+        if let entryIndex = setProgress[exerciseProgressIndex].setEntries.firstIndex(where: { $0.setIndex == entry.setIndex }) {
+            setProgress[exerciseProgressIndex].setEntries[entryIndex] = entry
+        } else {
+            setProgress[exerciseProgressIndex].setEntries.append(entry)
+        }
+        if entry.isCompleted {
+            setProgress[exerciseProgressIndex].completedSets.insert(entry.setIndex)
+        } else {
+            setProgress[exerciseProgressIndex].completedSets.remove(entry.setIndex)
+        }
+        setProgress[exerciseProgressIndex].setEntries.sort { $0.setIndex < $1.setIndex }
+    }
+
+    private func upsertWorkoutLog(for date: Date) {
+        let key = dateKey(for: date)
+        let log = WorkoutLog(dateKey: key, setProgress: setProgress)
+        if let index = workoutLogs.firstIndex(where: { $0.dateKey == key }) {
+            workoutLogs[index] = log
+        } else {
+            workoutLogs.append(log)
         }
     }
 

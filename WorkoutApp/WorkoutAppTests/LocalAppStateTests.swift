@@ -54,6 +54,53 @@ final class LocalAppStateTests: XCTestCase {
         XCTAssertEqual(restored.progress(for: "hip-thrust").completedSets, [])
     }
 
+    func testSetEntryWeightRepsAndCompletionPersistByDate() {
+        let state = LocalAppState(defaults: defaults)
+        let date = date(year: 2026, month: 5, day: 11)
+
+        state.updateSetEntry(exerciseID: "hip-thrust", setIndex: 0, weightText: "135", repsText: "10", date: date)
+        state.toggleSet(exerciseID: "hip-thrust", setIndex: 0, date: date)
+
+        let restored = LocalAppState(defaults: defaults)
+        let entry = restored.setEntry(exerciseID: "hip-thrust", setIndex: 0)
+
+        XCTAssertEqual(entry.weightText, "135")
+        XCTAssertEqual(entry.repsText, "10")
+        XCTAssertTrue(entry.isCompleted)
+        XCTAssertEqual(restored.workoutLog(for: date).setProgress.first?.setEntries.first, entry)
+    }
+
+    func testLastPerformanceSummaryUsesPreviousDate() {
+        let state = LocalAppState(defaults: defaults)
+        let today = date(year: 2026, month: 5, day: 18)
+        let lastWeek = date(year: 2026, month: 5, day: 11)
+
+        state.updateSetEntry(exerciseID: "hip-thrust", setIndex: 0, weightText: "135", repsText: "10", date: lastWeek)
+        state.toggleSet(exerciseID: "hip-thrust", setIndex: 0, date: lastWeek)
+        state.updateSetEntry(exerciseID: "hip-thrust", setIndex: 1, weightText: "135", repsText: "9", date: lastWeek)
+        state.toggleSet(exerciseID: "hip-thrust", setIndex: 1, date: lastWeek)
+        state.updateSetEntry(exerciseID: "hip-thrust", setIndex: 0, weightText: "140", repsText: "8", date: today)
+
+        XCTAssertEqual(state.lastPerformanceSummary(exerciseID: "hip-thrust", before: today), "135 lb x 10, 9")
+    }
+
+    func testWeeklyCheckInPersists() {
+        let state = LocalAppState(defaults: defaults)
+        let date = date(year: 2026, month: 5, day: 17)
+
+        state.updateWeeklyCheckIn(date: date, bodyWeightText: "142.4", waistText: "28", hipsText: "39", energy: 4, soreness: 2, notes: "Good week")
+
+        let restored = LocalAppState(defaults: defaults)
+        let checkIn = restored.weeklyCheckIn(for: date)
+
+        XCTAssertEqual(checkIn.bodyWeightText, "142.4")
+        XCTAssertEqual(checkIn.waistText, "28")
+        XCTAssertEqual(checkIn.hipsText, "39")
+        XCTAssertEqual(checkIn.energy, 4)
+        XCTAssertEqual(checkIn.soreness, 2)
+        XCTAssertEqual(checkIn.notes, "Good week")
+    }
+
     func testSelectedMealsFiltersBySelectedMealIDs() {
         let state = LocalAppState(defaults: defaults)
         state.selectedMealIDs = ["meal-2"]

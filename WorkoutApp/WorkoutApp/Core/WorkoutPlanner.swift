@@ -21,3 +21,59 @@ struct WorkoutPlanner {
         return nil
     }
 }
+
+enum WorkoutProgressAdvisor {
+    static func suggestion(for exercise: Exercise, progress: SetProgress?) -> String {
+        guard let progress else {
+            return "Start with a controlled first set."
+        }
+
+        let completedEntries = progress.setEntries
+            .filter { $0.isCompleted }
+            .sorted { $0.setIndex < $1.setIndex }
+        guard completedEntries.count >= exercise.sets,
+              let workingWeight = completedEntries.compactMap({ numericValue($0.weightText) }).max() else {
+            if let latestWeight = completedEntries.compactMap({ numericValue($0.weightText) }).last {
+                return "Next time: repeat \(formatWeight(latestWeight)) lb."
+            }
+            return "Log weight and reps to get a next-time target."
+        }
+
+        guard let topRepTarget = topRepTarget(from: exercise.repRange) else {
+            return "Next time: repeat \(formatWeight(workingWeight)) lb."
+        }
+
+        let clearedTopRange = completedEntries.allSatisfy { entry in
+            guard let reps = Int(entry.repsText.trimmingCharacters(in: .whitespacesAndNewlines)) else {
+                return false
+            }
+            return reps >= topRepTarget
+        }
+
+        if clearedTopRange {
+            return "Next time: try \(formatWeight(workingWeight + increment(for: workingWeight))) lb."
+        }
+
+        return "Next time: repeat \(formatWeight(workingWeight)) lb."
+    }
+
+    private static func topRepTarget(from repRange: String) -> Int? {
+        let matches = repRange.matches(of: /\d+/)
+        return matches.compactMap { Int($0.output) }.max()
+    }
+
+    private static func numericValue(_ text: String) -> Double? {
+        Double(text.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    private static func increment(for weight: Double) -> Double {
+        weight >= 100 ? 5 : 2.5
+    }
+
+    private static func formatWeight(_ weight: Double) -> String {
+        if weight.rounded() == weight {
+            return String(Int(weight))
+        }
+        return String(format: "%.1f", weight)
+    }
+}

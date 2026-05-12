@@ -54,4 +54,56 @@ final class WorkoutPlannerTests: XCTestCase {
         let active = planner.activeExercise(in: lowerA, progress: [completed])
         XCTAssertEqual(active?.id, "barbell-hip-thrust")
     }
+
+    func testProgressionSuggestionIncreasesAfterTopRangeCompleted() {
+        let exercise = Exercise(
+            id: "hip-thrust",
+            name: "Hip Thrust",
+            sets: 3,
+            repRange: "8-10",
+            rest: "90s",
+            cue: "Drive through heels.",
+            formCues: [],
+            mistakes: [],
+            feel: "Glutes",
+            demoURL: nil
+        )
+        let progress = SetProgress(
+            exerciseID: "hip-thrust",
+            completedSets: [0, 1, 2],
+            setEntries: [
+                SetEntry(setIndex: 0, weightText: "135", repsText: "10", isCompleted: true),
+                SetEntry(setIndex: 1, weightText: "135", repsText: "10", isCompleted: true),
+                SetEntry(setIndex: 2, weightText: "135", repsText: "10", isCompleted: true)
+            ]
+        )
+
+        XCTAssertEqual(WorkoutProgressAdvisor.suggestion(for: exercise, progress: progress), "Next time: try 140 lb.")
+    }
+
+    func testProgressionSuggestionRepeatsWhenTargetNotCleared() {
+        let exercise = Exercise(
+            id: "hip-thrust",
+            name: "Hip Thrust",
+            sets: 3,
+            repRange: "8-10",
+            rest: "90s",
+            cue: "Drive through heels.",
+            formCues: [],
+            mistakes: [],
+            feel: "Glutes",
+            demoURL: nil
+        )
+        let progress = SetProgress(
+            exerciseID: "hip-thrust",
+            completedSets: [0, 1, 2],
+            setEntries: [
+                SetEntry(setIndex: 0, weightText: "135", repsText: "10", isCompleted: true),
+                SetEntry(setIndex: 1, weightText: "135", repsText: "9", isCompleted: true),
+                SetEntry(setIndex: 2, weightText: "135", repsText: "8", isCompleted: true)
+            ]
+        )
+
+        XCTAssertEqual(WorkoutProgressAdvisor.suggestion(for: exercise, progress: progress), "Next time: repeat 135 lb.")
+    }
 }
