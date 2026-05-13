@@ -2,6 +2,8 @@ import SwiftUI
 
 struct TodayView: View {
     let state: LocalAppState
+    var currentDate: () -> Date = Date.init
+    @State private var selectedPrepAheadOffset = 1
     @State private var manuallyExpandedExerciseIDs: Set<String> = []
     @State private var manuallyCollapsedExerciseIDs: Set<String> = []
     @State private var lastActiveExerciseID: String?
@@ -13,6 +15,7 @@ struct TodayView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     let workout = planner.workout(for: currentWeekday(), override: state.selectedDayOverride) ?? ProgramSeed.weeklySchedule[1]
                     brandBanner
+                    prepAheadSection
                     header(for: workout)
 
                     if workout.isRestDay {
@@ -24,7 +27,8 @@ struct TodayView: View {
                                 ExerciseCardView(
                                     exercise: exercise,
                                     isExpanded: expansionBinding(for: exercise, activeExerciseID: active?.id),
-                                    state: state
+                                    state: state,
+                                    currentDate: currentDate
                                 )
                             }
                             finishSummary(for: workout)
@@ -56,6 +60,44 @@ struct TodayView: View {
             .accessibilityLabel("I'd Lift That")
     }
 
+    private var prepAheadSection: some View {
+        let futureDate = prepAheadDate(offset: selectedPrepAheadOffset)
+        let futureWorkout = planner.workout(for: futureDate) ?? ProgramSeed.weeklySchedule[1]
+
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("Prep Ahead")
+                    .font(.headline)
+                Spacer()
+                Text("+\(selectedPrepAheadOffset)d")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AppTheme.accent)
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(1...7, id: \.self) { offset in
+                        Button {
+                            selectedPrepAheadOffset = offset
+                        } label: {
+                            Text("+\(offset)")
+                                .font(.subheadline.weight(.semibold))
+                                .frame(width: 44, height: 34)
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(offset == selectedPrepAheadOffset ? AppTheme.accent : .secondary)
+                    }
+                }
+            }
+
+            PrepAheadView(workout: futureWorkout, futureDate: futureDate, state: state)
+        }
+    }
+
+    private func prepAheadDate(offset: Int) -> Date {
+        Calendar.current.date(byAdding: .day, value: offset, to: currentDate()) ?? currentDate()
+    }
+
     private func header(for workout: WorkoutDay) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(workout.focus.uppercased())
@@ -73,7 +115,7 @@ struct TodayView: View {
     }
 
     private func finishSummary(for workout: WorkoutDay) -> some View {
-        let log = state.workoutLog(for: Date())
+        let log = state.workoutLog(for: currentDate())
         let summary = WorkoutPlanner.summary(for: workout, log: log)
 
         return VStack(alignment: .leading, spacing: 12) {
@@ -102,7 +144,7 @@ struct TodayView: View {
             }
 
             Button {
-                state.finishWorkout(date: Date())
+                state.finishWorkout(date: currentDate())
             } label: {
                 Label(summary.isFinished ? "Finished" : "Mark workout finished", systemImage: "checkmark.circle")
                     .frame(maxWidth: .infinity)
@@ -153,7 +195,7 @@ struct TodayView: View {
     }
 
     private func currentWeekday() -> Weekday {
-        let weekday = Calendar.current.component(.weekday, from: Date())
+        let weekday = Calendar.current.component(.weekday, from: currentDate())
         return Weekday.allCases[weekday - 1]
     }
 
