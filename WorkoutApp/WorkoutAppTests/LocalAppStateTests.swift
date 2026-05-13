@@ -83,6 +83,17 @@ final class LocalAppStateTests: XCTestCase {
         XCTAssertNil(restored.selectedSubstitutionID(exerciseID: "barbell-hip-thrust", date: tuesday))
     }
 
+    func testFutureSubstitutionDoesNotAffectToday() {
+        let state = LocalAppState(defaults: defaults)
+        let today = date(year: 2026, month: 5, day: 12)
+        let future = date(year: 2026, month: 5, day: 13)
+
+        state.selectSubstitution(exerciseID: "db-bench-press", substitutionID: "smith-machine-bench", date: future)
+
+        XCTAssertNil(state.selectedSubstitutionID(exerciseID: "db-bench-press", date: today))
+        XCTAssertEqual(state.selectedSubstitutionID(exerciseID: "db-bench-press", date: future), "smith-machine-bench")
+    }
+
     func testFinishingWorkoutPersistsByDate() {
         let state = LocalAppState(defaults: defaults)
         let monday = date(year: 2026, month: 5, day: 11)
