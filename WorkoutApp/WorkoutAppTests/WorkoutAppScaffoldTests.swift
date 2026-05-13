@@ -52,6 +52,25 @@ final class WorkoutAppScaffoldTests: XCTestCase {
         XCTAssertTrue(foodView.contains("let currentDate: () -> Date"))
     }
 
+    func testPrepAheadViewExistsAndIsWiredIntoToday() throws {
+        let prepAheadPath = sourcePath("WorkoutApp/Features/Today/PrepAheadView.swift")
+        let todayView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Today/TodayView.swift"), encoding: .utf8)
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: prepAheadPath))
+        XCTAssertTrue(todayView.contains("selectedPrepAheadOffset"))
+        XCTAssertTrue(todayView.contains("ForEach(1...7"))
+        XCTAssertTrue(todayView.contains("PrepAheadView(workout: futureWorkout, futureDate: futureDate, state: state)"))
+    }
+
+    func testPrepAheadViewDoesNotExposeLiveWorkoutCompletionControls() throws {
+        let prepAheadView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Today/PrepAheadView.swift"), encoding: .utf8)
+
+        XCTAssertFalse(prepAheadView.contains("finishWorkout"))
+        XCTAssertFalse(prepAheadView.contains("toggleSet"))
+        XCTAssertFalse(prepAheadView.contains("Mark workout finished"))
+        XCTAssertFalse(prepAheadView.contains("restTimer"))
+    }
+
     private func sourcePath(_ path: String) -> String {
         URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
