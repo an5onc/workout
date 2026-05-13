@@ -69,6 +69,8 @@ final class WorkoutAppScaffoldTests: XCTestCase {
         XCTAssertFalse(prepAheadView.contains("toggleSet"))
         XCTAssertFalse(prepAheadView.contains("Mark workout finished"))
         XCTAssertFalse(prepAheadView.contains("restTimer"))
+        XCTAssertFalse(prepAheadView.contains("ExerciseCardView("))
+        XCTAssertTrue(prepAheadView.contains("PrepAheadExerciseCard"))
     }
 
     private func sourcePath(_ path: String) -> String {
