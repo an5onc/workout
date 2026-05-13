@@ -2,7 +2,13 @@ import SwiftUI
 
 struct TodayView: View {
     let state: LocalAppState
-    var currentDate: () -> Date = Date.init
+    let currentDate: () -> Date
+
+    init(state: LocalAppState, currentDate: @escaping () -> Date = Date.init) {
+        self.state = state
+        self.currentDate = currentDate
+    }
+
     @State private var selectedPrepAheadOffset = 1
     @State private var manuallyExpandedExerciseIDs: Set<String> = []
     @State private var manuallyCollapsedExerciseIDs: Set<String> = []
@@ -66,8 +72,9 @@ struct TodayView: View {
 
         return VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("Prep Ahead")
-                    .font(.headline)
+                Text("Choose day")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
                 Spacer()
                 Text("+\(selectedPrepAheadOffset)d")
                     .font(.caption.weight(.semibold))
@@ -77,20 +84,44 @@ struct TodayView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(1...7, id: \.self) { offset in
-                        Button {
-                            selectedPrepAheadOffset = offset
-                        } label: {
-                            Text("+\(offset)")
-                                .font(.subheadline.weight(.semibold))
-                                .frame(width: 44, height: 34)
-                        }
-                        .buttonStyle(.bordered)
-                        .tint(offset == selectedPrepAheadOffset ? AppTheme.accent : .secondary)
+                        prepAheadOffsetButton(offset: offset)
                     }
                 }
             }
 
             PrepAheadView(workout: futureWorkout, futureDate: futureDate, state: state)
+        }
+    }
+
+    @ViewBuilder
+    private func prepAheadOffsetButton(offset: Int) -> some View {
+        let isSelected = offset == selectedPrepAheadOffset
+        let accessibilityLabel = offset == 1 ? "1 day ahead" : "\(offset) days ahead"
+        let label = Text("+\(offset)")
+            .font(.subheadline.weight(.semibold))
+            .frame(width: 44, height: 34)
+
+        if isSelected {
+            Button {
+                selectedPrepAheadOffset = offset
+            } label: {
+                label
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(AppTheme.accent)
+            .accessibilityLabel(accessibilityLabel)
+            .accessibilityValue("Selected")
+            .accessibilityAddTraits(.isSelected)
+        } else {
+            Button {
+                selectedPrepAheadOffset = offset
+            } label: {
+                label
+            }
+            .buttonStyle(.bordered)
+            .tint(.secondary)
+            .accessibilityLabel(accessibilityLabel)
+            .accessibilityValue("Not selected")
         }
     }
 
