@@ -14,6 +14,17 @@ final class WorkoutPlannerTests: XCTestCase {
         XCTAssertEqual(workout?.name, "Lower A")
     }
 
+    func testDateLookupUsesDateWeekday() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let monday = DateComponents(calendar: calendar, timeZone: calendar.timeZone, year: 2026, month: 5, day: 11, hour: 12).date!
+        let saturday = DateComponents(calendar: calendar, timeZone: calendar.timeZone, year: 2026, month: 5, day: 16, hour: 12).date!
+        let planner = WorkoutPlanner(schedule: ProgramSeed.weeklySchedule)
+
+        XCTAssertEqual(planner.workout(for: monday, calendar: calendar)?.name, "Lower A")
+        XCTAssertEqual(planner.workout(for: saturday, calendar: calendar)?.name, "Lower C")
+    }
+
     func testActiveExerciseAdvancesAfterCompletedSets() throws {
         let lowerA = try XCTUnwrap(ProgramSeed.workout(for: .monday))
         let planner = WorkoutPlanner(schedule: ProgramSeed.weeklySchedule)

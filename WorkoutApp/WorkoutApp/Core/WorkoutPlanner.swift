@@ -8,6 +8,14 @@ struct WorkoutPlanner {
         return schedule.first { $0.id == selected }
     }
 
+    func workout(for date: Date, calendar: Calendar = .current) -> WorkoutDay? {
+        let weekdayIndex = calendar.component(.weekday, from: date) - 1
+        guard Weekday.allCases.indices.contains(weekdayIndex) else {
+            return nil
+        }
+        return schedule.first { $0.id == Weekday.allCases[weekdayIndex] }
+    }
+
     func activeExercise(in workout: WorkoutDay, progress: [SetProgress]) -> Exercise? {
         guard !workout.isRestDay else { return nil }
         for exercise in workout.exercises {
