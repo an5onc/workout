@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		074AEDD818F0068ACBF3A986 /* ExerciseCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74629955E429CEA3628731C6 /* ExerciseCardView.swift */; };
+		0B0A4AF1181A4E8DBF8F7DD1 /* PrepAheadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F074C569134077890191C4 /* PrepAheadView.swift */; };
 		23FB6CE1DA910812D2C00CC6 /* ProgramSeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26DAD2BDAACAA2F6143B44B3 /* ProgramSeed.swift */; };
 		274A7A5B8A58C7EF1785BA78 /* UserLogModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 299FCD8096618DD744997288 /* UserLogModels.swift */; };
 		2CD05DF0BE34C4716D2B344B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 14C43064353C47412352616A /* Assets.xcassets */; };
@@ -59,6 +60,7 @@
 		59D9874F60BE35004930E655 /* WorkoutAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		61F8E2F41E6C83CD0EAFA9F6 /* PlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanView.swift; sourceTree = "<group>"; };
 		74629955E429CEA3628731C6 /* ExerciseCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseCardView.swift; sourceTree = "<group>"; };
+		A2F074C569134077890191C4 /* PrepAheadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrepAheadView.swift; sourceTree = "<group>"; };
 		BDE104EC845E99A3D65780E7 /* GroceryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroceryView.swift; sourceTree = "<group>"; };
 		C9B191CBCF3FAFE53B79DA4C /* LocalAppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAppState.swift; sourceTree = "<group>"; };
 		D5D30D72C8473D1C78A1D097 /* LocalAppStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAppStateTests.swift; sourceTree = "<group>"; };
@@ -170,6 +172,7 @@
 			isa = PBXGroup;
 			children = (
 				74629955E429CEA3628731C6 /* ExerciseCardView.swift */,
+				A2F074C569134077890191C4 /* PrepAheadView.swift */,
 				E12E873788E5CC2D177E3B62 /* TodayView.swift */,
 			);
 			path = Today;
@@ -302,6 +305,7 @@
 				430D5C5BD0701FE6A4E02C7F /* GroceryView.swift in Sources */,
 				B82DB24D2C364E0DC5AE6AFD /* LocalAppState.swift in Sources */,
 				3A09321BE9D108568DF1F217 /* PlanView.swift in Sources */,
+				0B0A4AF1181A4E8DBF8F7DD1 /* PrepAheadView.swift in Sources */,
 				676A9F3382FC35440B80B462 /* ProgramModels.swift in Sources */,
 				23FB6CE1DA910812D2C00CC6 /* ProgramSeed.swift in Sources */,
 				4EC9D87235A096DAF093D038 /* ProteinTracker.swift in Sources */,
