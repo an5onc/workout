@@ -261,6 +261,47 @@ final class LocalAppState {
         setProgress = workoutLog(for: startDate).setProgress
     }
 
+    func recordFitnessRetest(
+        baseProgramID: String,
+        phase: AssessmentPhase,
+        assessment: FitnessAssessment,
+        date: Date = Date()
+    ) {
+        guard phase != .baseline,
+              let profile = userProfile,
+              let baseProgram = ProgramSeed.program(id: baseProgramID),
+              let existingProgram = personalizedPrograms.first(where: { $0.baseProgramID == baseProgramID }) else {
+            return
+        }
+
+        let normalizedAssessment = normalizedRetestAssessment(
+            assessment,
+            phase: phase,
+            date: date,
+            profile: profile
+        )
+        var personalizedProgram = PersonalizationCalculator.personalizedProgram(
+            base: baseProgram,
+            profile: profile,
+            assessment: normalizedAssessment,
+            startDate: parsedDate(from: existingProgram.startDateKey) ?? date
+        )
+        personalizedProgram.baselineAssessmentID = existingProgram.baselineAssessmentID
+        personalizedProgram.latestAssessmentID = normalizedAssessment.id
+        personalizedProgram.generatedProgram = retestAdjustedProgram(
+            personalizedProgram.generatedProgram,
+            phase: phase,
+            level: personalizedProgram.assignedLevel
+        )
+
+        upsertFitnessAssessment(normalizedAssessment)
+        upsertPersonalizedProgram(personalizedProgram)
+        selectedProgramID = baseProgramID
+        selectedMealIDs.removeAll()
+        checkedGroceryItemIDs.removeAll()
+        setProgress = workoutLog(for: date).setProgress
+    }
+
     private func restore() {
         guard let data = defaults.data(forKey: storageKey),
               let snapshot = try? JSONDecoder().decode(Snapshot.self, from: data) else {
@@ -335,6 +376,59 @@ final class LocalAppState {
         }
     }
 
+    private func normalizedRetestAssessment(
+        _ assessment: FitnessAssessment,
+        phase: AssessmentPhase,
+        date: Date,
+        profile: UserProfile
+    ) -> FitnessAssessment {
+        var normalized = FitnessAssessment(
+            dateKey: dateKey(for: date),
+            phase: phase,
+            pushUpReps: assessment.pushUpReps,
+            pushUpVariation: assessment.pushUpVariation,
+            stepTestDurationSeconds: assessment.stepTestDurationSeconds,
+            stepCount: assessment.stepCount,
+            recoveryHeartRate: assessment.recoveryHeartRate,
+            stepTestDifficulty: assessment.stepTestDifficulty,
+            oneMileTimeSeconds: assessment.oneMileTimeSeconds,
+            oneMileStyle: assessment.oneMileStyle,
+            oneMileDifficulty: assessment.oneMileDifficulty,
+            computedLevel: assessment.computedLevel
+        )
+        normalized.computedLevel = PersonalizationCalculator.level(for: profile, assessment: normalized)
+        return normalized
+    }
+
+    private func retestAdjustedProgram(
+        _ program: TrainingProgram,
+        phase: AssessmentPhase,
+        level: TrainingLevel
+    ) -> TrainingProgram {
+        let adjustmentLabel: String
+        switch phase {
+        case .baseline:
+            adjustmentLabel = "Baseline assessment"
+        case .week6:
+            adjustmentLabel = "Weeks 7-12 adjusted after Week 6 retest"
+        case .week12:
+            adjustmentLabel = "Week 12 final assessment recorded"
+        }
+
+        return TrainingProgram(
+            id: program.id,
+            name: program.name,
+            goal: program.goal,
+            summary: "\(program.summary) \(phase.title) retest assigned \(level.title) training for the next block.",
+            weeklyStructure: [adjustmentLabel] + program.weeklyStructure.filter { $0 != adjustmentLabel },
+            prepSteps: program.prepSteps,
+            nutritionTargets: program.nutritionTargets,
+            quickProteinAnchors: program.quickProteinAnchors,
+            weeklySchedule: program.weeklySchedule,
+            mealTemplates: program.mealTemplates
+        )
+    }
+
     private func ensureProgressIndex(for exerciseID: String) -> Int {
         if let index = setProgress.firstIndex(where: { $0.exerciseID == exerciseID }) {
             return index
@@ -373,6 +467,13 @@ final class LocalAppState {
 
     private func dateKey(for date: Date) -> String {
         Self.dateKeyFormatter.string(from: date)
+    }
+
+    private func parsedDate(from dateKey: String?) -> Date? {
+        guard let dateKey else {
+            return nil
+        }
+        return Self.dateKeyFormatter.date(from: dateKey)
     }
 
     @ObservationIgnored private static let dateKeyFormatter: DateFormatter = {

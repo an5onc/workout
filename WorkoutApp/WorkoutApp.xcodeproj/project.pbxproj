@@ -16,6 +16,7 @@
 		430D5C5BD0701FE6A4E02C7F /* GroceryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDE104EC845E99A3D65780E7 /* GroceryView.swift */; };
 		477B83E0FA8B462A02D6B27D /* WorkoutApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E683E77D158F57A447DF81 /* WorkoutApp.swift */; };
 		501A9B61435D48AD9EB61B2E /* PersonalizationFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 501A9B62435D48AD9EB61B2E /* PersonalizationFlowView.swift */; };
+		501A9B63435D48AD9EB61B2E /* RetestFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 501A9B64435D48AD9EB61B2E /* RetestFlowView.swift */; };
 		49A84B76558B7D52B9C5475C /* ProgramSeedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523DE3D6E15F8272C81C43DF /* ProgramSeedTests.swift */; };
 		4EC9D87235A096DAF093D038 /* ProteinTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D76A85E7479E2DAD686A07 /* ProteinTracker.swift */; };
 		501A9B5F435D48AD9EB61B2E /* PersonalizationCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 501A9B60435D48AD9EB61B2E /* PersonalizationCalculator.swift */; };
@@ -61,6 +62,7 @@
 		38360FAA657685AF1E733AD5 /* WorkoutPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutPlanner.swift; sourceTree = "<group>"; };
 		422D09EB801CE5BA0EDFBA28 /* WorkoutApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkoutApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		501A9B62435D48AD9EB61B2E /* PersonalizationFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalizationFlowView.swift; sourceTree = "<group>"; };
+		501A9B64435D48AD9EB61B2E /* RetestFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetestFlowView.swift; sourceTree = "<group>"; };
 		501A9B60435D48AD9EB61B2E /* PersonalizationCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalizationCalculator.swift; sourceTree = "<group>"; };
 		501A9B5E435D48AD9EB61B2E /* PersonalizationCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalizationCalculatorTests.swift; sourceTree = "<group>"; };
 		501A9B59435D48AD9EB61B2E /* ProgressMetricsCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressMetricsCalculator.swift; sourceTree = "<group>"; };
@@ -225,6 +227,7 @@
 			children = (
 				501A9B62435D48AD9EB61B2E /* PersonalizationFlowView.swift */,
 				61F8E2F41E6C83CD0EAFA9F6 /* PlanView.swift */,
+				501A9B64435D48AD9EB61B2E /* RetestFlowView.swift */,
 			);
 			path = Plan;
 			sourceTree = "<group>";
@@ -327,6 +330,7 @@
 				676A9F3382FC35440B80B462 /* ProgramModels.swift in Sources */,
 				23FB6CE1DA910812D2C00CC6 /* ProgramSeed.swift in Sources */,
 				4EC9D87235A096DAF093D038 /* ProteinTracker.swift in Sources */,
+				501A9B63435D48AD9EB61B2E /* RetestFlowView.swift in Sources */,
 				6074CA527906301CCF2DBA49 /* RootTabView.swift in Sources */,
 				68FB3BAB304099170467C73C /* TodayView.swift in Sources */,
 				274A7A5B8A58C7EF1785BA78 /* UserLogModels.swift in Sources */,

@@ -17,6 +17,23 @@ final class PersonalizationCalculatorTests: XCTestCase {
         XCTAssertEqual(level, .moderate)
     }
 
+    func testModifiedPushupsCannotAssignAdvancedLevel() {
+        let profile = profile(limitations: "")
+
+        let kneePushups = assessment(pushUps: 45, pushUpVariation: .knee, steps: 120, mileSeconds: 540)
+        let inclinePushups = assessment(pushUps: 45, pushUpVariation: .incline, steps: 120, mileSeconds: 540)
+
+        XCTAssertEqual(PersonalizationCalculator.level(for: profile, assessment: kneePushups), .moderate)
+        XCTAssertEqual(PersonalizationCalculator.level(for: profile, assessment: inclinePushups), .moderate)
+    }
+
+    func testHighDifficultyDownshiftsModerateAssessment() {
+        let profile = profile(limitations: "")
+        let assessment = assessment(pushUps: 20, steps: 92, mileSeconds: 820, stepDifficulty: 9, mileDifficulty: 8)
+
+        XCTAssertEqual(PersonalizationCalculator.level(for: profile, assessment: assessment), .beginner)
+    }
+
     func testGeneratedPlanVolumeAndNutritionChangeByLevel() throws {
         let base = try XCTUnwrap(ProgramSeed.program(id: "weight-loss-foundation"))
         let profile = profile(weight: 200, limitations: "")
@@ -44,6 +61,43 @@ final class PersonalizationCalculatorTests: XCTestCase {
         XCTAssertLessThan(beginnerSets, baseSets)
         XCTAssertGreaterThan(advancedSets, baseSets)
         XCTAssertEqual(advanced.generatedProgram.nutritionTargets.proteinGrams, 160)
+    }
+
+    func testWeakAssessmentHandpicksPushAndAerobicBaseExercises() throws {
+        let base = try XCTUnwrap(ProgramSeed.program(id: "weight-loss-foundation"))
+        let profile = profile(weight: 220, limitations: "")
+        let program = PersonalizationCalculator.personalizedProgram(
+            base: base,
+            profile: profile,
+            assessment: assessment(pushUps: 4, steps: 52, mileSeconds: 1_120, stepDifficulty: 8, mileDifficulty: 8),
+            startDate: date(year: 2026, month: 5, day: 1),
+            calendar: calendar
+        )
+
+        let exerciseNames = program.generatedProgram.weeklySchedule.flatMap(\.exercises).map(\.name)
+
+        XCTAssertTrue(exerciseNames.contains("Incline Push-Up Practice"))
+        XCTAssertTrue(exerciseNames.contains("Treadmill Walk Intervals"))
+        XCTAssertTrue(program.generatedProgram.weeklyStructure.contains("Push-strength base: incline push-up practice"))
+        XCTAssertTrue(program.generatedProgram.weeklyStructure.contains("Aerobic base: repeatable treadmill intervals"))
+    }
+
+    func testAdvancedAssessmentProgressesFutureExercises() throws {
+        let base = try XCTUnwrap(ProgramSeed.program(id: "weight-loss-foundation"))
+        let profile = profile(weight: 170, limitations: "")
+        let program = PersonalizationCalculator.personalizedProgram(
+            base: base,
+            profile: profile,
+            assessment: assessment(phase: .week6, dateKey: "2026-06-12", pushUps: 42, steps: 122, mileSeconds: 540),
+            startDate: date(year: 2026, month: 5, day: 1),
+            calendar: calendar
+        )
+
+        let exerciseNames = program.generatedProgram.weeklySchedule.flatMap(\.exercises).map(\.name)
+
+        XCTAssertTrue(exerciseNames.contains("Push-Up Progression"))
+        XCTAssertTrue(exerciseNames.contains("Treadmill Run/Walk Intervals"))
+        XCTAssertTrue(program.generatedProgram.weeklyStructure.contains("Advanced progression: harder push and interval work"))
     }
 
     func testRetestDueDatesAtWeekSixAndWeekTwelve() throws {
@@ -82,21 +136,24 @@ final class PersonalizationCalculatorTests: XCTestCase {
         phase: AssessmentPhase = .baseline,
         dateKey: String = "2026-05-01",
         pushUps: Int,
+        pushUpVariation: PushUpVariation = .standard,
         steps: Int,
-        mileSeconds: Int
+        mileSeconds: Int,
+        stepDifficulty: Int = 6,
+        mileDifficulty: Int = 7
     ) -> FitnessAssessment {
         FitnessAssessment(
             dateKey: dateKey,
             phase: phase,
             pushUpReps: pushUps,
-            pushUpVariation: .standard,
+            pushUpVariation: pushUpVariation,
             stepTestDurationSeconds: 180,
             stepCount: steps,
             recoveryHeartRate: 120,
-            stepTestDifficulty: 6,
+            stepTestDifficulty: stepDifficulty,
             oneMileTimeSeconds: mileSeconds,
             oneMileStyle: .walkRun,
-            oneMileDifficulty: 7,
+            oneMileDifficulty: mileDifficulty,
             computedLevel: .beginner
         )
     }

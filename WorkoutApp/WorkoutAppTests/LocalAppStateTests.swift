@@ -292,6 +292,131 @@ final class LocalAppStateTests: XCTestCase {
         XCTAssertEqual(state.selectedProgram.name, "Weight Loss Foundation - Moderate")
     }
 
+    func testRecordFitnessRetestUsesStoredProfileAndAdjustsNextBlock() throws {
+        let state = LocalAppState(defaults: defaults)
+        let profile = UserProfile(
+            age: 34,
+            heightInches: 66,
+            weightPounds: 180,
+            experienceLevel: "Some training",
+            availableWorkoutDaysPerWeek: 4,
+            limitations: ""
+        )
+        let baseline = FitnessAssessment(
+            dateKey: "2026-05-11",
+            phase: .baseline,
+            pushUpReps: 20,
+            pushUpVariation: .standard,
+            stepTestDurationSeconds: 180,
+            stepCount: 85,
+            recoveryHeartRate: nil,
+            stepTestDifficulty: 6,
+            oneMileTimeSeconds: 760,
+            oneMileStyle: .walkRun,
+            oneMileDifficulty: 7,
+            computedLevel: .beginner
+        )
+        let retest = FitnessAssessment(
+            dateKey: "2026-06-22",
+            phase: .week6,
+            pushUpReps: 36,
+            pushUpVariation: .standard,
+            stepTestDurationSeconds: 180,
+            stepCount: 118,
+            recoveryHeartRate: 108,
+            stepTestDifficulty: 6,
+            oneMileTimeSeconds: 575,
+            oneMileStyle: .walkRun,
+            oneMileDifficulty: 6,
+            computedLevel: .beginner
+        )
+
+        state.finalizePersonalizedProgram(
+            baseProgramID: "weight-loss-foundation",
+            profile: profile,
+            assessment: baseline,
+            startDate: date(year: 2026, month: 5, day: 11)
+        )
+        state.recordFitnessRetest(
+            baseProgramID: "weight-loss-foundation",
+            phase: .week6,
+            assessment: retest,
+            date: date(year: 2026, month: 6, day: 22)
+        )
+
+        let personalized = try XCTUnwrap(state.personalizedPrograms.first)
+
+        XCTAssertEqual(state.userProfile, profile)
+        XCTAssertEqual(state.fitnessAssessments.map(\.phase), [.baseline, .week6])
+        XCTAssertEqual(state.fitnessAssessments.last?.computedLevel, .advanced)
+        XCTAssertEqual(personalized.baselineAssessmentID, baseline.id)
+        XCTAssertEqual(personalized.latestAssessmentID, "week6|2026-06-22")
+        XCTAssertEqual(personalized.assignedLevel, .advanced)
+        XCTAssertTrue(personalized.generatedProgram.summary.contains("Week 6 retest"))
+        XCTAssertTrue(personalized.generatedProgram.weeklyStructure.contains("Weeks 7-12 adjusted after Week 6 retest"))
+    }
+
+    func testRecordFitnessRetestRegeneratesAdaptiveExerciseChoices() throws {
+        let state = LocalAppState(defaults: defaults)
+        let profile = UserProfile(
+            age: 34,
+            heightInches: 66,
+            weightPounds: 180,
+            experienceLevel: "Some training",
+            availableWorkoutDaysPerWeek: 4,
+            limitations: ""
+        )
+        let baseline = FitnessAssessment(
+            dateKey: "2026-05-11",
+            phase: .baseline,
+            pushUpReps: 4,
+            pushUpVariation: .standard,
+            stepTestDurationSeconds: 180,
+            stepCount: 52,
+            recoveryHeartRate: 135,
+            stepTestDifficulty: 8,
+            oneMileTimeSeconds: 1_120,
+            oneMileStyle: .walkRun,
+            oneMileDifficulty: 8,
+            computedLevel: .beginner
+        )
+        let week6 = FitnessAssessment(
+            dateKey: "2026-06-22",
+            phase: .week6,
+            pushUpReps: 42,
+            pushUpVariation: .standard,
+            stepTestDurationSeconds: 180,
+            stepCount: 122,
+            recoveryHeartRate: 104,
+            stepTestDifficulty: 6,
+            oneMileTimeSeconds: 540,
+            oneMileStyle: .walkRun,
+            oneMileDifficulty: 6,
+            computedLevel: .beginner
+        )
+
+        state.finalizePersonalizedProgram(
+            baseProgramID: "weight-loss-foundation",
+            profile: profile,
+            assessment: baseline,
+            startDate: date(year: 2026, month: 5, day: 11)
+        )
+        XCTAssertTrue(state.selectedProgram.weeklySchedule.flatMap(\.exercises).map(\.name).contains("Incline Push-Up Practice"))
+
+        state.recordFitnessRetest(
+            baseProgramID: "weight-loss-foundation",
+            phase: .week6,
+            assessment: week6,
+            date: date(year: 2026, month: 6, day: 22)
+        )
+
+        let retestExerciseNames = state.selectedProgram.weeklySchedule.flatMap(\.exercises).map(\.name)
+
+        XCTAssertTrue(retestExerciseNames.contains("Push-Up Progression"))
+        XCTAssertTrue(retestExerciseNames.contains("Treadmill Run/Walk Intervals"))
+        XCTAssertFalse(retestExerciseNames.contains("Incline Push-Up Practice"))
+    }
+
     func testSelectedMealsFiltersBySelectedMealIDs() {
         let state = LocalAppState(defaults: defaults)
         state.selectedMealIDs = ["meal-2"]

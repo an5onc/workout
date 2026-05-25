@@ -80,34 +80,34 @@ enum ProgramSeed {
         weeklySchedule: [
             WorkoutDay(id: .sunday, name: "Rest + prep", focus: "Recovery", subtitle: "Full rest, grocery reset, and light walking if desired.", isRestDay: true, exercises: []),
             WorkoutDay(id: .monday, name: "Full Body A", focus: "Strength + conditioning", subtitle: "Big movements, steady pace, short finisher.", isRestDay: false, exercises: [
-                exercise("wl-goblet-squat", "Goblet Squat", 3, "10-12", "60s", "Stay tall and control the lower."),
-                exercise("wl-db-bench-press", "DB Bench Press", 3, "10", "60-75s", "Smooth reps, stop before form breaks."),
+                exercise("wl-goblet-squat", "Goblet Squat", 3, "10-12", "60s", "Stay tall and control the lower.", tags: [.lowerStrength]),
+                exercise("wl-db-bench-press", "DB Bench Press", 3, "10", "60-75s", "Smooth reps, stop before form breaks.", tags: [.pushStrength]),
                 exercise("wl-seated-cable-row", "Seated Cable Row", 3, "12", "60s", "Pull elbows to ribs."),
-                exercise("wl-incline-walk-finisher", "Incline Walk Finisher", 1, "12 minutes", "Easy pace", "Use a pace you can sustain while breathing hard.")
+                exercise("wl-incline-walk-finisher", "Incline Walk Finisher", 1, "12 minutes", "Easy pace", "Use a pace you can sustain while breathing hard.", tags: [.conditioning, .treadmill, .lowImpact])
             ]),
             WorkoutDay(id: .tuesday, name: "Zone 2 Walk", focus: "Conditioning", subtitle: "Low-impact cardio for calorie burn and recovery.", isRestDay: false, exercises: [
-                exercise("wl-incline-walk", "Incline Treadmill Walk", 1, "30-40 minutes", "Steady", "Nasal breathing if possible, no running required."),
+                exercise("wl-incline-walk", "Incline Treadmill Walk", 1, "30-40 minutes", "Steady", "Nasal breathing if possible, no running required.", tags: [.conditioning, .treadmill, .lowImpact, .beginnerFriendly]),
                 exercise("wl-dead-bug", "Dead Bug", 3, "8/side", "45s", "Keep low back down.")
             ]),
             WorkoutDay(id: .wednesday, name: "Full Body B", focus: "Strength + core", subtitle: "Hinge, press, pull, and core stability.", isRestDay: false, exercises: [
-                exercise("wl-db-romanian-deadlift", "DB Romanian Deadlift", 3, "10", "75s", "Push hips back and keep weights close."),
+                exercise("wl-db-romanian-deadlift", "DB Romanian Deadlift", 3, "10", "75s", "Push hips back and keep weights close.", tags: [.lowerStrength]),
                 exercise("wl-lat-pulldown", "Lat Pulldown", 3, "10-12", "60s", "Drive elbows down."),
-                exercise("wl-step-up", "DB Step-Up", 3, "8/leg", "60s", "Drive through the full foot."),
+                exercise("wl-step-up", "DB Step-Up", 3, "8/leg", "60s", "Drive through the full foot.", tags: [.lowerStrength, .unilateral]),
                 exercise("wl-pallof-press", "Pallof Press", 3, "10/side", "45s", "Resist rotation.")
             ]),
             WorkoutDay(id: .thursday, name: "Mobility + Core", focus: "Mobility", subtitle: "Move, recover, and keep the habit alive.", isRestDay: false, exercises: [
-                exercise("wl-bike-easy", "Easy Bike", 1, "15-20 minutes", "Steady", "Keep this conversational."),
+                exercise("wl-bike-easy", "Easy Bike", 1, "15-20 minutes", "Steady", "Keep this conversational.", tags: [.conditioning, .lowImpact, .beginnerFriendly]),
                 exercise("wl-hip-flexor-mobility", "Hip Flexor Mobility", 2, "45 seconds/side", "30s", "Squeeze the back glute."),
                 exercise("wl-side-plank", "Side Plank", 3, "20-30 seconds/side", "45s", "Keep ribs stacked.")
             ]),
             WorkoutDay(id: .friday, name: "Full Body C", focus: "Strength + conditioning", subtitle: "Moderate strength work and a machine cardio finish.", isRestDay: false, exercises: [
-                exercise("wl-leg-press", "Leg Press", 3, "12", "60-75s", "Controlled reps, knees tracking."),
-                exercise("wl-machine-chest-press", "Machine Chest Press", 3, "10-12", "60s", "Control the return."),
+                exercise("wl-leg-press", "Leg Press", 3, "12", "60-75s", "Controlled reps, knees tracking.", tags: [.lowerStrength, .lowImpact]),
+                exercise("wl-machine-chest-press", "Machine Chest Press", 3, "10-12", "60s", "Control the return.", tags: [.pushStrength, .lowImpact]),
                 exercise("wl-machine-row", "Machine Row", 3, "12", "60s", "Pause with shoulder blades squeezed."),
-                exercise("wl-elliptical-finisher", "Elliptical Finisher", 1, "10-15 minutes", "Easy pace", "Keep moving without sprinting.")
+                exercise("wl-elliptical-finisher", "Elliptical Finisher", 1, "10-15 minutes", "Easy pace", "Keep moving without sprinting.", tags: [.conditioning, .lowImpact])
             ]),
             WorkoutDay(id: .saturday, name: "Long Walk + Core", focus: "Conditioning", subtitle: "Long easy movement and light core work.", isRestDay: false, exercises: [
-                exercise("wl-long-walk", "Outdoor or Treadmill Walk", 1, "40-60 minutes", "Steady", "Stay relaxed and keep the pace repeatable."),
+                exercise("wl-long-walk", "Outdoor or Treadmill Walk", 1, "40-60 minutes", "Steady", "Stay relaxed and keep the pace repeatable.", tags: [.conditioning, .treadmill, .lowImpact, .beginnerFriendly]),
                 exercise("wl-plank", "Plank", 3, "30-45 seconds", "45s", "Squeeze glutes and breathe.")
             ])
         ],
@@ -258,7 +258,15 @@ enum ProgramSeed {
         weeklySchedule.first { $0.id == weekday }
     }
 
-    private static func exercise(_ id: String, _ name: String, _ sets: Int, _ reps: String, _ rest: String, _ cue: String) -> Exercise {
+    private static func exercise(
+        _ id: String,
+        _ name: String,
+        _ sets: Int,
+        _ reps: String,
+        _ rest: String,
+        _ cue: String,
+        tags: Set<ExerciseTag> = []
+    ) -> Exercise {
         Exercise(
             id: id,
             name: name,
@@ -270,7 +278,8 @@ enum ProgramSeed {
             mistakes: ["Using momentum.", "Letting form break down."],
             feel: "Target muscles working without sharp pain.",
             demoURL: URL(string: "https://www.youtube.com/results?search_query=\(name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? name)+proper+form"),
-            substitutions: substitutions(for: id)
+            substitutions: substitutions(for: id),
+            tags: tags
         )
     }
 

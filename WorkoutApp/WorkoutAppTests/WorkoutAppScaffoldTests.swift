@@ -139,6 +139,23 @@ final class WorkoutAppScaffoldTests: XCTestCase {
         XCTAssertTrue(flowView.contains("finalizePersonalizedProgram"))
     }
 
+    func testPlanRetestFlowExistsAndSkipsProfileInputs() throws {
+        let planView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Plan/PlanView.swift"), encoding: .utf8)
+        let flowPath = sourcePath("WorkoutApp/Features/Plan/RetestFlowView.swift")
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: flowPath))
+        let flowView = try String(contentsOfFile: flowPath, encoding: .utf8)
+
+        XCTAssertTrue(planView.contains("Record retest"))
+        XCTAssertTrue(planView.contains("RetestFlowView"))
+        XCTAssertTrue(flowView.contains("Record retest"))
+        XCTAssertTrue(flowView.contains("Push-up test"))
+        XCTAssertTrue(flowView.contains("Step test"))
+        XCTAssertTrue(flowView.contains("1-mile treadmill"))
+        XCTAssertTrue(flowView.contains("recordFitnessRetest"))
+        XCTAssertFalse(flowView.contains("Profile basics"))
+    }
+
     func testTodayAndProgressExposeAssessmentStatus() throws {
         let todayView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Today/TodayView.swift"), encoding: .utf8)
         let rootTabView = try String(contentsOfFile: sourcePath("WorkoutApp/App/RootTabView.swift"), encoding: .utf8)

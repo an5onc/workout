@@ -1,52 +1,38 @@
 import Foundation
 
 enum PersonalizationCalculator {
+    private enum TrainingFocus: Hashable {
+        case pushStrengthBase
+        case aerobicBase
+        case jointFriendlyLoading
+        case advancedProgression
+    }
+
     static func level(for profile: UserProfile, assessment: FitnessAssessment) -> TrainingLevel {
-        var score = 0
-
-        switch assessment.pushUpReps {
-        case 0..<10:
-            score += 0
-        case 10..<30:
-            score += 1
-        default:
-            score += 2
-        }
-
-        switch assessment.stepCount {
-        case 0..<70:
-            score += 0
-        case 70..<105:
-            score += 1
-        default:
-            score += 2
-        }
-
-        switch assessment.oneMileTimeSeconds {
-        case 0...600:
-            score += 2
-        case 601...840:
-            score += 1
-        default:
-            score += 0
-        }
-
-        if assessment.stepTestDifficulty >= 9 || assessment.oneMileDifficulty >= 9 {
-            score -= 1
-        }
+        let score = pushUpScore(for: assessment)
+            + stepTestScore(for: assessment)
+            + mileScore(for: assessment)
 
         var level: TrainingLevel
         switch score {
-        case 0...2:
+        case 0...3:
             level = .beginner
-        case 3...4:
+        case 4...6:
             level = .moderate
         default:
             level = .advanced
         }
 
-        if hasLimitations(profile), level == .advanced {
+        if assessment.pushUpVariation != .standard, level == .advanced {
             level = .moderate
+        }
+
+        if assessment.stepTestDifficulty >= 9 || assessment.oneMileDifficulty >= 9 {
+            level = downshift(level)
+        }
+
+        if hasLimitations(profile) {
+            level = downshift(level)
         }
 
         return level
@@ -65,11 +51,11 @@ enum PersonalizationCalculator {
             name: "\(base.name) - \(assignedLevel.title)",
             goal: base.goal,
             summary: "\(assignedLevel.title) version built from the baseline fitness assessment.",
-            weeklyStructure: weeklyStructure(for: base, level: assignedLevel),
+            weeklyStructure: weeklyStructure(for: base, profile: profile, assessment: assessment, level: assignedLevel),
             prepSteps: base.prepSteps,
             nutritionTargets: nutritionTargets(for: base, profile: profile),
             quickProteinAnchors: base.quickProteinAnchors,
-            weeklySchedule: weeklySchedule(for: base, level: assignedLevel),
+            weeklySchedule: weeklySchedule(for: base, profile: profile, assessment: assessment, level: assignedLevel),
             mealTemplates: base.mealTemplates
         )
 
@@ -119,8 +105,15 @@ enum PersonalizationCalculator {
         return nil
     }
 
-    private static func weeklySchedule(for base: TrainingProgram, level: TrainingLevel) -> [WorkoutDay] {
-        base.weeklySchedule.map { day in
+    private static func weeklySchedule(
+        for base: TrainingProgram,
+        profile: UserProfile,
+        assessment: FitnessAssessment,
+        level: TrainingLevel
+    ) -> [WorkoutDay] {
+        let focuses = trainingFocuses(for: profile, assessment: assessment, level: level)
+
+        return base.weeklySchedule.map { day in
             WorkoutDay(
                 id: day.id,
                 name: day.name,
@@ -128,9 +121,62 @@ enum PersonalizationCalculator {
                 subtitle: day.subtitle,
                 isRestDay: day.isRestDay,
                 exercises: day.exercises.map { exercise in
-                    adjustedExercise(exercise, level: level)
+                    adaptiveExercise(adjustedExercise(exercise, level: level), focuses: focuses)
                 }
             )
+        }
+    }
+
+    private static func pushUpScore(for assessment: FitnessAssessment) -> Int {
+        let score: Int
+        switch assessment.pushUpReps {
+        case 0..<5:
+            score = 0
+        case 5..<15:
+            score = 1
+        case 15..<30:
+            score = 2
+        default:
+            score = 3
+        }
+
+        return assessment.pushUpVariation == .standard ? score : min(score, 2)
+    }
+
+    private static func stepTestScore(for assessment: FitnessAssessment) -> Int {
+        switch assessment.stepCount {
+        case 0..<60:
+            return 0
+        case 60..<85:
+            return 1
+        case 85..<110:
+            return 2
+        default:
+            return 3
+        }
+    }
+
+    private static func mileScore(for assessment: FitnessAssessment) -> Int {
+        switch assessment.oneMileTimeSeconds {
+        case 0...600:
+            return 3
+        case 601...780:
+            return 2
+        case 781...960:
+            return 1
+        default:
+            return 0
+        }
+    }
+
+    private static func downshift(_ level: TrainingLevel) -> TrainingLevel {
+        switch level {
+        case .beginner:
+            return .beginner
+        case .moderate:
+            return .beginner
+        case .advanced:
+            return .moderate
         }
     }
 
@@ -156,19 +202,175 @@ enum PersonalizationCalculator {
             mistakes: exercise.mistakes,
             feel: exercise.feel,
             demoURL: exercise.demoURL,
-            substitutions: exercise.substitutions
+            substitutions: exercise.substitutions,
+            tags: exercise.tags
         )
     }
 
-    private static func weeklyStructure(for base: TrainingProgram, level: TrainingLevel) -> [String] {
+    private static func weeklyStructure(
+        for base: TrainingProgram,
+        profile: UserProfile,
+        assessment: FitnessAssessment,
+        level: TrainingLevel
+    ) -> [String] {
+        let focuses = trainingFocuses(for: profile, assessment: assessment, level: level)
+        let levelStructure: [String]
         switch level {
         case .beginner:
-            return ["Beginner volume", "Longer rests", "Lower-impact conditioning"] + base.weeklyStructure
+            levelStructure = ["Beginner volume", "Longer rests", "Lower-impact conditioning"]
         case .moderate:
-            return ["Moderate volume", "Standard rests"] + base.weeklyStructure
+            levelStructure = ["Moderate volume", "Standard rests"]
         case .advanced:
-            return ["Advanced volume", "Progressive overload emphasis"] + base.weeklyStructure
+            levelStructure = ["Advanced volume", "Progressive overload emphasis"]
         }
+
+        return levelStructure + focusStructure(for: focuses) + base.weeklyStructure
+    }
+
+    private static func trainingFocuses(
+        for profile: UserProfile,
+        assessment: FitnessAssessment,
+        level: TrainingLevel
+    ) -> Set<TrainingFocus> {
+        var focuses = Set<TrainingFocus>()
+
+        if assessment.pushUpReps < 15 || assessment.pushUpVariation != .standard {
+            focuses.insert(.pushStrengthBase)
+        }
+
+        if assessment.stepCount < 85 || assessment.oneMileTimeSeconds > 960 {
+            focuses.insert(.aerobicBase)
+        }
+
+        if hasLimitations(profile) || assessment.stepTestDifficulty >= 9 || assessment.oneMileDifficulty >= 9 {
+            focuses.insert(.jointFriendlyLoading)
+        }
+
+        if level == .advanced,
+           pushUpScore(for: assessment) == 3,
+           stepTestScore(for: assessment) == 3,
+           mileScore(for: assessment) == 3,
+           !hasLimitations(profile) {
+            focuses.insert(.advancedProgression)
+        }
+
+        return focuses
+    }
+
+    private static func focusStructure(for focuses: Set<TrainingFocus>) -> [String] {
+        var structure: [String] = []
+
+        if focuses.contains(.pushStrengthBase) {
+            structure.append("Push-strength base: incline push-up practice")
+        }
+        if focuses.contains(.aerobicBase) {
+            structure.append("Aerobic base: repeatable treadmill intervals")
+        }
+        if focuses.contains(.jointFriendlyLoading) {
+            structure.append("Joint-friendly loading: stable lower-impact exercise choices")
+        }
+        if focuses.contains(.advancedProgression) {
+            structure.append("Advanced progression: harder push and interval work")
+        }
+
+        return structure
+    }
+
+    private static func adaptiveExercise(_ exercise: Exercise, focuses: Set<TrainingFocus>) -> Exercise {
+        if focuses.contains(.jointFriendlyLoading),
+           exercise.tags.contains(.lowerStrength),
+           exercise.tags.contains(.unilateral) {
+            return handpickedExercise(
+                replacing: exercise,
+                idSuffix: "supported-split-squat",
+                name: "Supported Split Squat",
+                sets: max(1, exercise.sets),
+                repRange: "8-10/side",
+                rest: "60-75s",
+                cue: "Use a rack or rail for balance and keep every rep pain-free.",
+                tags: [.lowerStrength, .lowImpact, .beginnerFriendly]
+            )
+        }
+
+        if focuses.contains(.advancedProgression), exercise.tags.contains(.pushStrength) {
+            return handpickedExercise(
+                replacing: exercise,
+                idSuffix: "push-up-progression",
+                name: "Push-Up Progression",
+                sets: max(3, exercise.sets),
+                repRange: "AMRAP clean reps",
+                rest: "60s",
+                cue: "Use full-body tension and stop one rep before form breaks.",
+                tags: [.pushStrength]
+            )
+        }
+
+        if focuses.contains(.pushStrengthBase), exercise.tags.contains(.pushStrength) {
+            return handpickedExercise(
+                replacing: exercise,
+                idSuffix: "incline-push-up-practice",
+                name: "Incline Push-Up Practice",
+                sets: max(2, exercise.sets),
+                repRange: "6-10 clean reps",
+                rest: "60s",
+                cue: "Choose an incline that lets every rep stay smooth.",
+                tags: [.pushStrength, .beginnerFriendly, .lowImpact]
+            )
+        }
+
+        if focuses.contains(.advancedProgression), exercise.tags.contains(.conditioning) {
+            return handpickedExercise(
+                replacing: exercise,
+                idSuffix: "run-walk-intervals",
+                name: "Treadmill Run/Walk Intervals",
+                sets: 1,
+                repRange: "18-22 minutes",
+                rest: "0.0 incline",
+                cue: "Alternate brisk run intervals with controlled walking recoveries.",
+                tags: [.conditioning, .treadmill]
+            )
+        }
+
+        if focuses.contains(.aerobicBase), exercise.tags.contains(.conditioning) {
+            return handpickedExercise(
+                replacing: exercise,
+                idSuffix: "walk-intervals",
+                name: "Treadmill Walk Intervals",
+                sets: 1,
+                repRange: "20 minutes",
+                rest: "0.0 incline",
+                cue: "Alternate one minute brisk with one minute easy and keep breathing controlled.",
+                tags: [.conditioning, .treadmill, .lowImpact, .beginnerFriendly]
+            )
+        }
+
+        return exercise
+    }
+
+    private static func handpickedExercise(
+        replacing exercise: Exercise,
+        idSuffix: String,
+        name: String,
+        sets: Int,
+        repRange: String,
+        rest: String,
+        cue: String,
+        tags: Set<ExerciseTag>
+    ) -> Exercise {
+        Exercise(
+            id: "\(exercise.id)-\(idSuffix)",
+            name: name,
+            sets: sets,
+            repRange: repRange,
+            rest: rest,
+            cue: cue,
+            formCues: [cue, "Keep the effort repeatable.", "Stop if form breaks."],
+            mistakes: ["Rushing the work.", "Pushing past clean technique."],
+            feel: "Challenging but repeatable without sharp pain.",
+            demoURL: URL(string: "https://www.youtube.com/results?search_query=\(name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? name)+proper+form"),
+            substitutions: exercise.substitutions,
+            tags: tags
+        )
     }
 
     private static func nutritionTargets(for base: TrainingProgram, profile: UserProfile) -> NutritionTargets {

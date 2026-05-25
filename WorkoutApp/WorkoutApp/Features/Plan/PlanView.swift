@@ -5,6 +5,7 @@ struct PlanView: View {
     @State private var exerciseSearchText = ""
     @State private var pendingProgramSelection: TrainingProgram?
     @State private var personalizationProgram: TrainingProgram?
+    @State private var retestContext: RetestContext?
     @State private var previewProgramID = ProgramSeed.defaultProgramID
 
     private var selectedProgram: TrainingProgram {
@@ -85,6 +86,9 @@ struct PlanView: View {
             .sheet(item: $personalizationProgram) { program in
                 PersonalizationFlowView(state: state, program: program)
             }
+            .sheet(item: $retestContext) { context in
+                RetestFlowView(state: state, program: context.program, phase: context.phase)
+            }
         }
     }
 
@@ -143,6 +147,14 @@ struct PlanView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(AppTheme.accent)
+
+                if let phase = retestPhase(for: selectedProgramPreview) {
+                    Button("Record retest") {
+                        retestContext = RetestContext(program: selectedProgramPreview, phase: phase)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(AppTheme.accent)
+                }
             }
             .padding(.vertical, 4)
         }
@@ -374,6 +386,19 @@ struct PlanView: View {
         program.weeklySchedule.filter { !$0.isRestDay }.count
     }
 
+    private func retestPhase(for program: TrainingProgram) -> AssessmentPhase? {
+        guard program.id == state.selectedProgram.id,
+              let personalizedProgram = state.personalizedPrograms.first(where: { $0.baseProgramID == program.id }) else {
+            return nil
+        }
+
+        return PersonalizationCalculator.nextRetestPhase(
+            program: personalizedProgram,
+            assessments: state.fitnessAssessments,
+            on: Date()
+        )
+    }
+
     private func weekdayTitle(_ weekday: Weekday) -> String {
         switch weekday {
         case .sunday: "Sunday"
@@ -395,5 +420,14 @@ struct PlanView: View {
         case .preWorkout: "Pre-workout"
         case .postWorkout: "Post-workout"
         }
+    }
+}
+
+private struct RetestContext: Identifiable {
+    let program: TrainingProgram
+    let phase: AssessmentPhase
+
+    var id: String {
+        "\(program.id)-\(phase.rawValue)"
     }
 }
