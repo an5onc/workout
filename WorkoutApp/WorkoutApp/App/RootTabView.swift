@@ -29,7 +29,11 @@ struct ProgressDashboardView: View {
     @State private var checkInDate = Date()
 
     private var recentWorkoutLogs: [WorkoutLog] {
-        state.workoutLogs.sorted { $0.dateKey > $1.dateKey }.prefix(5).map { $0 }
+        state.workoutLogs
+            .filter { $0.programID == state.selectedProgram.id }
+            .sorted { $0.dateKey > $1.dateKey }
+            .prefix(5)
+            .map { $0 }
     }
 
     private var checkIn: WeeklyCheckIn {
@@ -209,7 +213,7 @@ struct ProgressDashboardView: View {
 
     private func exerciseRecords() -> [(exerciseID: String, weight: String, reps: String)] {
         var records: [String: (weight: Double, reps: Int)] = [:]
-        for log in state.workoutLogs {
+        for log in state.workoutLogs where log.programID == state.selectedProgram.id {
             for progress in log.setProgress {
                 for entry in progress.setEntries where entry.isCompleted {
                     guard let weight = Double(entry.weightText), let reps = Int(entry.repsText) else { continue }
@@ -227,6 +231,7 @@ struct ProgressDashboardView: View {
 
     private func exerciseSessions(for exerciseID: String) -> [(dateKey: String, summary: String)] {
         state.workoutLogs
+            .filter { $0.programID == state.selectedProgram.id }
             .sorted { $0.dateKey > $1.dateKey }
             .compactMap { log in
                 guard let progress = log.setProgress.first(where: { $0.exerciseID == exerciseID }) else {
@@ -244,7 +249,7 @@ struct ProgressDashboardView: View {
 
     private func recentScheduleDays() -> [(dateKey: String, title: String, completedSets: Int, isFinished: Bool)] {
         recentDateKeys(limit: 7).map { dateKey in
-            let log = state.workoutLogs.first { $0.dateKey == dateKey } ?? WorkoutLog(dateKey: dateKey)
+            let log = state.workoutLogs.first { $0.dateKey == dateKey && $0.programID == state.selectedProgram.id } ?? WorkoutLog(dateKey: dateKey, programID: state.selectedProgram.id)
             return (
                 dateKey: dateKey,
                 title: workoutForLog(log)?.name ?? "Workout",

@@ -3,6 +3,7 @@ import SwiftUI
 struct PlanView: View {
     let state: LocalAppState
     @State private var exerciseSearchText = ""
+    @State private var pendingProgramSelection: TrainingProgram?
 
     private var selectedProgram: TrainingProgram {
         state.selectedProgram
@@ -51,6 +52,29 @@ struct PlanView: View {
             }
             .navigationTitle("Plan")
             .searchable(text: $exerciseSearchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search exercises")
+            .confirmationDialog(
+                "Switch plans",
+                isPresented: Binding(
+                    get: { pendingProgramSelection != nil },
+                    set: { isPresented in
+                        if !isPresented {
+                            pendingProgramSelection = nil
+                        }
+                    }
+                ),
+                titleVisibility: .visible
+            ) {
+                if let program = pendingProgramSelection {
+                    Button("Switch plans") {
+                        state.selectProgram(id: program.id)
+                        pendingProgramSelection = nil
+                    }
+                }
+
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Switching plans resets Grocery picks so old meal selections do not carry into the new plan.")
+            }
         }
     }
 
@@ -81,31 +105,31 @@ struct PlanView: View {
     private func programOptionRow(_ program: TrainingProgram) -> some View {
         let isCurrent = program.id == state.selectedProgram.id
 
-        return VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: isCurrent ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(isCurrent ? AppTheme.accent : .secondary)
-                    .font(.title3)
+        return HStack(alignment: .center, spacing: 12) {
+            Image(systemName: isCurrent ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(isCurrent ? AppTheme.accent : .secondary)
+                .font(.title3)
+                .frame(width: 24)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(program.name)
-                        .font(.headline)
-                    Text(program.goal)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(AppTheme.accent)
-                    Text(program.weeklyStructure.joined(separator: " / "))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                }
-
-                Spacer()
+            VStack(alignment: .leading, spacing: 4) {
+                Text(program.name)
+                    .font(.headline)
+                Text(program.goal)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AppTheme.accent)
+                Text(program.weeklyStructure.joined(separator: " / "))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
             }
 
-            Button(isCurrent ? "Current plan" : "Use this plan") {
-                state.selectProgram(id: program.id)
+            Spacer(minLength: 8)
+
+            Button(isCurrent ? "Current" : "Use this plan") {
+                pendingProgramSelection = program
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.bordered)
+            .tint(isCurrent ? .secondary : AppTheme.accent)
             .controlSize(.small)
             .disabled(isCurrent)
         }

@@ -89,6 +89,15 @@ final class WorkoutAppScaffoldTests: XCTestCase {
         XCTAssertTrue(planView.contains("Use this plan"))
     }
 
+    func testPlanSwitchUsesConfirmationDialogBeforeChangingProgram() throws {
+        let planView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Plan/PlanView.swift"), encoding: .utf8)
+
+        XCTAssertTrue(planView.contains("pendingProgramSelection"))
+        XCTAssertTrue(planView.contains(".confirmationDialog("))
+        XCTAssertTrue(planView.contains("Switch plans"))
+        XCTAssertTrue(planView.contains("state.selectProgram(id: program.id)"))
+    }
+
     private func sourcePath(_ path: String) -> String {
         URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

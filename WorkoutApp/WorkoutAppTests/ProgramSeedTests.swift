@@ -22,6 +22,27 @@ final class ProgramSeedTests: XCTestCase {
         XCTAssertTrue(program.mealTemplates.allSatisfy { !$0.ingredients.isEmpty })
     }
 
+    func testWeightLossStrengthExercisesIncludeSubstitutions() throws {
+        let program = try XCTUnwrap(ProgramSeed.program(id: "weight-loss-foundation"))
+        let exercises = program.weeklySchedule.flatMap(\.exercises)
+        let goblet = try XCTUnwrap(exercises.first { $0.id == "wl-goblet-squat" })
+        let row = try XCTUnwrap(exercises.first { $0.id == "wl-seated-cable-row" })
+        let legPress = try XCTUnwrap(exercises.first { $0.id == "wl-leg-press" })
+
+        XCTAssertGreaterThanOrEqual(goblet.substitutions.count, 2)
+        XCTAssertGreaterThanOrEqual(row.substitutions.count, 2)
+        XCTAssertGreaterThanOrEqual(legPress.substitutions.count, 2)
+        XCTAssertTrue([goblet, row, legPress].flatMap(\.substitutions).allSatisfy { $0.demoURL != nil })
+    }
+
+    func testWeightLossProgramHasExpandedMealVariety() throws {
+        let program = try XCTUnwrap(ProgramSeed.program(id: "weight-loss-foundation"))
+
+        XCTAssertGreaterThanOrEqual(program.mealTemplates.count, 7)
+        XCTAssertTrue(program.mealTemplates.contains { $0.kind == .dinner && $0.name == "Shrimp Fajita Bowl" })
+        XCTAssertTrue(program.mealTemplates.contains { $0.kind == .snack && $0.name == "Tuna Cucumber Plate" })
+    }
+
     func testWeeklyScheduleHasSevenDays() {
         XCTAssertEqual(ProgramSeed.weeklySchedule.count, 7)
         XCTAssertEqual(ProgramSeed.workout(for: .monday)?.name, "Lower A")

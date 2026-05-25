@@ -2,10 +2,13 @@
 
 ## Latest Session
 
-- **2026-05-24 (Session 02)** -> [2026-05-24__session-02.md](2026-05-24__session-02.md)
-  - Added selectable in-app training programs, introduced a Weight Loss Foundation plan, and wired Today/Food/Grocery/Plan to the selected program.
+- **2026-05-24 (Session 03)** -> [2026-05-24__session-03.md](2026-05-24__session-03.md)
+  - Continued the selectable-program feature with program-scoped workout logs, a plan-switch confirmation dialog, weight-loss plan substitutions/meals, selector UI polish, simulator verification, and bundle-size measurement.
 
 ## Previous Sessions
+
+- **2026-05-24 (Session 02)** -> [2026-05-24__session-02.md](2026-05-24__session-02.md)
+  - Added selectable in-app training programs, introduced a Weight Loss Foundation plan, and wired Today/Food/Grocery/Plan to the selected program.
 
 - **2026-05-24 (Session 01)** -> [2026-05-24__session-01.md](2026-05-24__session-01.md)
   - Created durable project handoff docs for the Workout iOS app, added the session system, documented current stack/build truth, and verified available project checks.

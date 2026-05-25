@@ -91,6 +91,24 @@ final class LocalAppStateTests: XCTestCase {
         XCTAssertEqual(restored.progress(for: "hip-thrust").completedSets, [])
     }
 
+    func testWorkoutLogsAreScopedBySelectedProgram() {
+        let state = LocalAppState(defaults: defaults)
+        let date = date(year: 2026, month: 5, day: 11)
+
+        state.toggleSet(exerciseID: "barbell-hip-thrust", setIndex: 0, date: date)
+        state.selectProgram(id: "weight-loss-foundation")
+        state.toggleSet(exerciseID: "wl-goblet-squat", setIndex: 0, date: date)
+
+        XCTAssertEqual(state.workoutLogs.count, 2)
+        XCTAssertEqual(state.workoutLog(for: date).programID, "weight-loss-foundation")
+        XCTAssertEqual(state.workoutLog(for: date).setProgress.first?.exerciseID, "wl-goblet-squat")
+
+        state.selectProgram(id: ProgramSeed.defaultProgramID)
+
+        XCTAssertEqual(state.workoutLog(for: date).programID, ProgramSeed.defaultProgramID)
+        XCTAssertEqual(state.workoutLog(for: date).setProgress.first?.exerciseID, "barbell-hip-thrust")
+    }
+
     func testSetEntryWeightRepsAndCompletionPersistByDate() {
         let state = LocalAppState(defaults: defaults)
         let date = date(year: 2026, month: 5, day: 11)

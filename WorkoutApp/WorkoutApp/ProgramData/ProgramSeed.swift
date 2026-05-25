@@ -134,10 +134,32 @@ enum ProgramSeed {
                 ingredient("cauliflower-rice", "Cauliflower rice", "1 cup", .produce),
                 ingredient("avocado", "Avocado", "1/4", .produce)
             ]),
+            meal("shrimp-fajita-bowl", .dinner, "Shrimp Fajita Bowl", "Shrimp, peppers, onions, cauliflower rice, salsa, avocado.", 400, 42, 14, 30, [
+                ingredient("shrimp", "Shrimp", "6 oz", .meatSeafood),
+                ingredient("bell-peppers", "Bell peppers", "1 cup", .produce),
+                ingredient("red-onion", "Red onion", "1/4", .produce),
+                ingredient("cauliflower-rice", "Cauliflower rice", "1 cup", .produce),
+                ingredient("salsa", "Salsa", "2 tbsp", .pantry),
+                ingredient("avocado", "Avocado", "1/4", .produce)
+            ]),
             meal("cottage-cheese-berries", .snack, "Cottage Cheese + Berries", "Cottage cheese, berries, cinnamon.", 220, 24, 4, 22, [
                 ingredient("cottage-cheese", "Low-fat cottage cheese", "1 cup", .dairyEggs),
                 ingredient("berries", "Mixed berries", "1/2 cup", .produce),
                 ingredient("cinnamon", "Cinnamon", "1 tsp", .pantry)
+            ]),
+            meal("tuna-cucumber-plate", .snack, "Tuna Cucumber Plate", "Tuna, cucumber rounds, Greek yogurt, mustard, pickles.", 230, 34, 4, 12, [
+                ingredient("tuna", "Tuna packet", "1", .meatSeafood),
+                ingredient("cucumber", "Cucumber", "1", .produce),
+                ingredient("greek-yogurt", "Non-fat Greek yogurt", "2 tbsp", .dairyEggs),
+                ingredient("mustard", "Mustard", "1 tbsp", .pantry),
+                ingredient("pickles", "Pickles", "1/4 cup", .produce)
+            ]),
+            meal("protein-smoothie", .breakfast, "Protein Smoothie", "Whey, Greek yogurt, berries, spinach, almond milk.", 300, 38, 4, 28, [
+                ingredient("whey-protein", "Whey protein", "1 scoop", .supplementsExtras),
+                ingredient("greek-yogurt", "Non-fat Greek yogurt", "1/2 cup", .dairyEggs),
+                ingredient("berries", "Mixed berries", "1/2 cup", .produce),
+                ingredient("spinach", "Spinach", "1 cup", .produce),
+                ingredient("almond-milk", "Unsweetened almond milk", "1 cup", .dairyEggs)
             ]),
             meal("protein-shake", .snack, "Protein Shake", "Whey with water or almond milk.", 120, 25, 1, 3, [
                 ingredient("whey-protein", "Whey protein", "1 scoop", .supplementsExtras),
@@ -340,6 +362,52 @@ enum ProgramSeed {
             return [
                 substitution("leg-press-single-leg", "Single-Leg Leg Press", "Leg press", "Glutes and quads", "Drive through one heel and avoid locking the knee."),
                 substitution("db-reverse-lunge", "DB Reverse Lunge", "Dumbbells", "Glutes and quads", "Use the front leg to pull back up.")
+            ]
+        case "wl-goblet-squat":
+            return [
+                substitution("wl-leg-press-sub", "Leg Press", "Leg press", "Quads and glutes", "Keep reps controlled and stop before your hips tuck."),
+                substitution("wl-box-squat", "Box Squat", "Dumbbell or bodyweight", "Quads and glutes", "Tap the box lightly and stand through the full foot."),
+                substitution("wl-smith-machine-squat", "Smith Machine Squat", "Smith machine", "Quads and glutes", "Use a comfortable stance and keep knees tracking.")
+            ]
+        case "wl-db-bench-press":
+            return [
+                substitution("wl-machine-chest-press-sub", "Machine Chest Press", "Chest press machine", "Chest", "Set handles around mid-chest and control the return."),
+                substitution("wl-incline-push-up", "Incline Push-Up", "Bench or rack", "Chest", "Keep ribs down and use a height that allows clean reps.")
+            ]
+        case "wl-seated-cable-row":
+            return [
+                substitution("wl-machine-row-sub", "Machine Row", "Row machine", "Upper back", "Pause with shoulder blades squeezed."),
+                substitution("wl-chest-supported-db-row", "Chest-Supported DB Row", "Dumbbells + incline bench", "Upper back", "Keep chest on the bench and row without twisting.")
+            ]
+        case "wl-db-romanian-deadlift":
+            return [
+                substitution("wl-cable-pull-through", "Cable Pull-Through", "Cable", "Hamstrings and glutes", "Hinge back and squeeze through the hips."),
+                substitution("wl-smith-machine-rdl", "Smith Machine Romanian Deadlift", "Smith machine", "Hamstrings and glutes", "Use a soft knee and stop at a clean stretch.")
+            ]
+        case "wl-lat-pulldown":
+            return [
+                substitution("wl-assisted-pull-up-machine", "Assisted Pull-Up Machine", "Assisted pull-up machine", "Lats", "Pull elbows toward ribs and avoid shrugging."),
+                substitution("wl-straight-arm-pulldown", "Straight-Arm Pulldown", "Cable", "Lats", "Sweep the handles toward your thighs.")
+            ]
+        case "wl-step-up":
+            return [
+                substitution("wl-reverse-lunge", "Reverse Lunge", "Dumbbells or bodyweight", "Glutes and quads", "Step back and drive through the front foot."),
+                substitution("wl-single-leg-leg-press", "Single-Leg Leg Press", "Leg press", "Glutes and quads", "Press smoothly without locking the knee.")
+            ]
+        case "wl-leg-press":
+            return [
+                substitution("wl-goblet-squat-sub", "Goblet Squat", "Dumbbell", "Quads and glutes", "Stay tall and control the bottom."),
+                substitution("wl-box-squat-sub", "Box Squat", "Dumbbell or bodyweight", "Quads and glutes", "Use the box to keep depth consistent.")
+            ]
+        case "wl-machine-chest-press":
+            return [
+                substitution("wl-db-bench-press-sub", "DB Bench Press", "Dumbbells", "Chest", "Use a smooth tempo and stop before form breaks."),
+                substitution("wl-incline-push-up-sub", "Incline Push-Up", "Bench or rack", "Chest", "Pick an incline that keeps reps clean.")
+            ]
+        case "wl-machine-row":
+            return [
+                substitution("wl-seated-cable-row-sub", "Seated Cable Row", "Cable", "Upper back", "Pull elbows to ribs and keep the torso quiet."),
+                substitution("wl-chest-supported-row", "Chest-Supported Row", "Machine or incline bench", "Upper back", "Keep your chest supported and pause briefly.")
             ]
         default:
             return []

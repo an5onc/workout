@@ -42,19 +42,22 @@ struct SetProgress: Identifiable, Hashable, Codable {
 }
 
 struct WorkoutLog: Identifiable, Hashable, Codable {
-    var id: String { dateKey }
+    var id: String { "\(programID)|\(dateKey)" }
     let dateKey: String
+    var programID: String
     var setProgress: [SetProgress]
     var finishedAt: Date?
     var selectedSubstitutionIDs: [String: String]
 
     init(
         dateKey: String,
+        programID: String = ProgramSeed.defaultProgramID,
         setProgress: [SetProgress] = [],
         finishedAt: Date? = nil,
         selectedSubstitutionIDs: [String: String] = [:]
     ) {
         self.dateKey = dateKey
+        self.programID = programID
         self.setProgress = setProgress
         self.finishedAt = finishedAt
         self.selectedSubstitutionIDs = selectedSubstitutionIDs
@@ -62,6 +65,7 @@ struct WorkoutLog: Identifiable, Hashable, Codable {
 
     private enum CodingKeys: String, CodingKey {
         case dateKey
+        case programID
         case setProgress
         case finishedAt
         case selectedSubstitutionIDs
@@ -70,6 +74,7 @@ struct WorkoutLog: Identifiable, Hashable, Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.dateKey = try container.decode(String.self, forKey: .dateKey)
+        self.programID = try container.decodeIfPresent(String.self, forKey: .programID) ?? ProgramSeed.defaultProgramID
         self.setProgress = try container.decodeIfPresent([SetProgress].self, forKey: .setProgress) ?? []
         self.finishedAt = try container.decodeIfPresent(Date.self, forKey: .finishedAt)
         self.selectedSubstitutionIDs = try container.decodeIfPresent([String: String].self, forKey: .selectedSubstitutionIDs) ?? [:]

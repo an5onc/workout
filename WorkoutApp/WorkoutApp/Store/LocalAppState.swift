@@ -38,6 +38,7 @@ final class LocalAppState {
         selectedProgramID = id
         selectedMealIDs.removeAll()
         checkedGroceryItemIDs.removeAll()
+        setProgress = workoutLog(for: Date()).setProgress
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -102,7 +103,7 @@ final class LocalAppState {
 
     func workoutLog(for date: Date) -> WorkoutLog {
         let key = dateKey(for: date)
-        return workoutLogs.first { $0.dateKey == key } ?? WorkoutLog(dateKey: key)
+        return workoutLogs.first { $0.dateKey == key && $0.programID == selectedProgramID } ?? WorkoutLog(dateKey: key, programID: selectedProgramID)
     }
 
     func selectSubstitution(exerciseID: String, substitutionID: String?, date: Date = Date()) {
@@ -132,7 +133,7 @@ final class LocalAppState {
     func lastPerformanceSummary(exerciseID: String, before date: Date = Date()) -> String? {
         let key = dateKey(for: date)
         let previousLogs = workoutLogs
-            .filter { $0.dateKey < key }
+            .filter { $0.programID == selectedProgramID && $0.dateKey < key }
             .sorted { $0.dateKey > $1.dateKey }
 
         for log in previousLogs {
@@ -264,7 +265,7 @@ final class LocalAppState {
     }
 
     private func upsertWorkoutLog(_ log: WorkoutLog) {
-        if let index = workoutLogs.firstIndex(where: { $0.dateKey == log.dateKey }) {
+        if let index = workoutLogs.firstIndex(where: { $0.dateKey == log.dateKey && $0.programID == log.programID }) {
             workoutLogs[index] = log
         } else {
             workoutLogs.append(log)
@@ -301,7 +302,8 @@ final class LocalAppState {
 
     private func upsertWorkoutLog(for date: Date) {
         let key = dateKey(for: date)
-        var log = workoutLogs.first { $0.dateKey == key } ?? WorkoutLog(dateKey: key)
+        var log = workoutLogs.first { $0.dateKey == key && $0.programID == selectedProgramID } ?? WorkoutLog(dateKey: key, programID: selectedProgramID)
+        log.programID = selectedProgramID
         log.setProgress = setProgress
         upsertWorkoutLog(log)
     }
