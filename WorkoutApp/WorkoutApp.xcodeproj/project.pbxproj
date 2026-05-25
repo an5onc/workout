@@ -17,6 +17,7 @@
 		477B83E0FA8B462A02D6B27D /* WorkoutApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E683E77D158F57A447DF81 /* WorkoutApp.swift */; };
 		501A9B61435D48AD9EB61B2E /* PersonalizationFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 501A9B62435D48AD9EB61B2E /* PersonalizationFlowView.swift */; };
 		501A9B63435D48AD9EB61B2E /* RetestFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 501A9B64435D48AD9EB61B2E /* RetestFlowView.swift */; };
+		501A9B65435D48AD9EB61B2E /* DemoLinkCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 501A9B66435D48AD9EB61B2E /* DemoLinkCatalog.swift */; };
 		49A84B76558B7D52B9C5475C /* ProgramSeedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523DE3D6E15F8272C81C43DF /* ProgramSeedTests.swift */; };
 		4EC9D87235A096DAF093D038 /* ProteinTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D76A85E7479E2DAD686A07 /* ProteinTracker.swift */; };
 		501A9B5F435D48AD9EB61B2E /* PersonalizationCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 501A9B60435D48AD9EB61B2E /* PersonalizationCalculator.swift */; };
@@ -63,6 +64,7 @@
 		422D09EB801CE5BA0EDFBA28 /* WorkoutApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkoutApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		501A9B62435D48AD9EB61B2E /* PersonalizationFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalizationFlowView.swift; sourceTree = "<group>"; };
 		501A9B64435D48AD9EB61B2E /* RetestFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetestFlowView.swift; sourceTree = "<group>"; };
+		501A9B66435D48AD9EB61B2E /* DemoLinkCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoLinkCatalog.swift; sourceTree = "<group>"; };
 		501A9B60435D48AD9EB61B2E /* PersonalizationCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalizationCalculator.swift; sourceTree = "<group>"; };
 		501A9B5E435D48AD9EB61B2E /* PersonalizationCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalizationCalculatorTests.swift; sourceTree = "<group>"; };
 		501A9B59435D48AD9EB61B2E /* ProgressMetricsCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressMetricsCalculator.swift; sourceTree = "<group>"; };
@@ -117,6 +119,7 @@
 		16D2847BF1561306330C51C6 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				501A9B66435D48AD9EB61B2E /* DemoLinkCatalog.swift */,
 				E81972276FEC3FE19B14118B /* GroceryListGenerator.swift */,
 				501A9B60435D48AD9EB61B2E /* PersonalizationCalculator.swift */,
 				501A9B59435D48AD9EB61B2E /* ProgressMetricsCalculator.swift */,
@@ -317,6 +320,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EB81A9B74CA36D1DBA4589F4 /* AppTheme.swift in Sources */,
+				501A9B65435D48AD9EB61B2E /* DemoLinkCatalog.swift in Sources */,
 				074AEDD818F0068ACBF3A986 /* ExerciseCardView.swift in Sources */,
 				F738D0A63E6B77D959765C65 /* FoodView.swift in Sources */,
 				B7048A09E21F92AB64EF3834 /* GroceryListGenerator.swift in Sources */,

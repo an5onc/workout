@@ -76,6 +76,18 @@ final class ProgramSeedTests: XCTestCase {
         XCTAssertTrue([hipThrust, dbBench, latPulldown].flatMap(\.substitutions).allSatisfy { $0.demoURL != nil })
     }
 
+    func testAllSeedExerciseDemoLinksAreCuratedNotSearches() {
+        let exercises = ProgramSeed.programs.flatMap(\.weeklySchedule).flatMap(\.exercises)
+        let substitutions = exercises.flatMap(\.substitutions)
+        let urls = exercises.compactMap(\.demoURL) + substitutions.compactMap(\.demoURL)
+
+        XCTAssertFalse(exercises.isEmpty)
+        XCTAssertEqual(urls.count, exercises.count + substitutions.count)
+        XCTAssertTrue(urls.allSatisfy { $0.host == "musclewiki.com" })
+        XCTAssertFalse(urls.contains { $0.absoluteString.contains("youtube.com/results") })
+        XCTAssertFalse(urls.contains { $0.absoluteString.contains("search_query") })
+    }
+
     func testMealTemplatesSupportGroceryBuilder() {
         XCTAssertTrue(ProgramSeed.mealTemplates.contains { $0.name == "Protein Oatmeal" })
         XCTAssertTrue(ProgramSeed.mealTemplates.contains { $0.name == "Chicken & Rice Power Bowl" })

@@ -277,7 +277,7 @@ enum ProgramSeed {
             formCues: [cue, "Brace your core.", "Control the lowering phase."],
             mistakes: ["Using momentum.", "Letting form break down."],
             feel: "Target muscles working without sharp pain.",
-            demoURL: URL(string: "https://www.youtube.com/results?search_query=\(name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? name)+proper+form"),
+            demoURL: DemoLinkCatalog.url(for: id, fallbackName: name),
             substitutions: substitutions(for: id),
             tags: tags
         )
@@ -430,7 +430,7 @@ enum ProgramSeed {
             equipment: equipment,
             target: target,
             cue: cue,
-            demoURL: URL(string: "https://www.youtube.com/results?search_query=\(name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? name)+proper+form")
+            demoURL: DemoLinkCatalog.url(for: id, fallbackName: name)
         )
     }
 

@@ -392,7 +392,7 @@ enum PersonalizationCalculator {
             formCues: [cue, "Keep the effort repeatable.", "Stop if form breaks."],
             mistakes: ["Rushing the work.", "Pushing past clean technique."],
             feel: "Challenging but repeatable without sharp pain.",
-            demoURL: URL(string: "https://www.youtube.com/results?search_query=\(name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? name)+proper+form"),
+            demoURL: DemoLinkCatalog.url(for: "\(exercise.id)-\(idSuffix)", fallbackName: name),
             substitutions: exercise.substitutions,
             tags: tags
         )

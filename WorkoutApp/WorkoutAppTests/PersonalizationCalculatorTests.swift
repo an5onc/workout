@@ -130,6 +130,35 @@ final class PersonalizationCalculatorTests: XCTestCase {
         XCTAssertTrue(program.generatedProgram.weeklyStructure.contains("Advanced progression: harder push and interval work"))
     }
 
+    func testAdaptiveExerciseDemoLinksAreCuratedNotSearches() throws {
+        let base = try XCTUnwrap(ProgramSeed.program(id: "weight-loss-foundation"))
+        let profile = profile(weight: 170, limitations: "")
+        let beginner = PersonalizationCalculator.personalizedProgram(
+            base: base,
+            profile: profile,
+            assessment: assessment(pushUps: 4, steps: 52, mileSeconds: 1_120),
+            startDate: date(year: 2026, month: 5, day: 1),
+            calendar: calendar
+        )
+        let advanced = PersonalizationCalculator.personalizedProgram(
+            base: base,
+            profile: profile,
+            assessment: assessment(pushUps: 42, steps: 122, mileSeconds: 540),
+            startDate: date(year: 2026, month: 5, day: 1),
+            calendar: calendar
+        )
+
+        let urls = (beginner.generatedProgram.weeklySchedule + advanced.generatedProgram.weeklySchedule)
+            .flatMap(\.exercises)
+            .compactMap(\.demoURL)
+
+        XCTAssertTrue(urls.contains { $0.absoluteString.contains("incline-push-up") })
+        XCTAssertTrue(urls.contains { $0.absoluteString.contains("treadmill") })
+        XCTAssertTrue(urls.allSatisfy { $0.host == "musclewiki.com" })
+        XCTAssertFalse(urls.contains { $0.absoluteString.contains("youtube.com/results") })
+        XCTAssertFalse(urls.contains { $0.absoluteString.contains("search_query") })
+    }
+
     func testRetestDueDatesAtWeekSixAndWeekTwelve() throws {
         let base = try XCTUnwrap(ProgramSeed.program(id: "weight-loss-foundation"))
         let baseline = assessment(phase: .baseline, dateKey: "2026-05-01", pushUps: 18, steps: 85, mileSeconds: 760)
