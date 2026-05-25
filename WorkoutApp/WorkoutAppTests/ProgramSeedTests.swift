@@ -2,6 +2,26 @@ import XCTest
 @testable import WorkoutApp
 
 final class ProgramSeedTests: XCTestCase {
+    func testProgramLibraryContainsDefaultAndWeightLossPrograms() throws {
+        let ids = ProgramSeed.programs.map(\.id)
+
+        XCTAssertGreaterThanOrEqual(ProgramSeed.programs.count, 2)
+        XCTAssertEqual(Set(ids).count, ids.count)
+        XCTAssertEqual(ProgramSeed.defaultProgramID, "lower-body-strength-recomp")
+        XCTAssertEqual(ProgramSeed.defaultProgram.name, "Lower Body Strength + Recomp")
+        XCTAssertNotNil(ProgramSeed.program(id: "weight-loss-foundation"))
+    }
+
+    func testWeightLossProgramHasSevenDayScheduleAndConditioningFocus() throws {
+        let program = try XCTUnwrap(ProgramSeed.program(id: "weight-loss-foundation"))
+
+        XCTAssertEqual(program.weeklySchedule.count, 7)
+        XCTAssertEqual(program.goal, "Weight loss")
+        XCTAssertTrue(program.weeklySchedule.contains { $0.focus.localizedCaseInsensitiveContains("conditioning") })
+        XCTAssertLessThan(program.nutritionTargets.calories, ProgramSeed.defaultProgram.nutritionTargets.calories)
+        XCTAssertTrue(program.mealTemplates.allSatisfy { !$0.ingredients.isEmpty })
+    }
+
     func testWeeklyScheduleHasSevenDays() {
         XCTAssertEqual(ProgramSeed.weeklySchedule.count, 7)
         XCTAssertEqual(ProgramSeed.workout(for: .monday)?.name, "Lower A")

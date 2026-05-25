@@ -17,7 +17,7 @@ struct RootTabView: View {
             GroceryView(state: state)
                 .tabItem { Label("Grocery", systemImage: "cart") }
 
-            PlanView()
+            PlanView(state: state)
                 .tabItem { Label("Plan", systemImage: "book") }
         }
         .tint(AppTheme.accent)
@@ -266,7 +266,7 @@ struct ProgressDashboardView: View {
             return nil
         }
         let weekday = Calendar.current.component(.weekday, from: date)
-        return ProgramSeed.workout(for: Weekday.allCases[weekday - 1])
+        return state.selectedProgram.weeklySchedule.first { $0.id == Weekday.allCases[weekday - 1] }
     }
 
     private func summaryText(for summary: WorkoutSummary?, fallbackLog log: WorkoutLog) -> String {
@@ -277,7 +277,7 @@ struct ProgressDashboardView: View {
     }
 
     private func exerciseName(for exerciseID: String) -> String {
-        ProgramSeed.weeklySchedule
+        state.selectedProgram.weeklySchedule
             .flatMap(\.exercises)
             .first { $0.id == exerciseID }?
             .name ?? exerciseID

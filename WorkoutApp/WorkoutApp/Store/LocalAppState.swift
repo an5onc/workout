@@ -5,6 +5,7 @@ import Observation
 @MainActor
 final class LocalAppState {
     private struct Snapshot: Codable {
+        var selectedProgramID: String?
         var selectedDayOverride: Weekday?
         var setProgress: [SetProgress]
         var selectedMealIDs: Set<String>
@@ -19,6 +20,7 @@ final class LocalAppState {
     @ObservationIgnored private let storageKey = "workout.localAppState.v1"
     @ObservationIgnored private var isRestoring = false
 
+    var selectedProgramID: String { didSet { save() } }
     var selectedDayOverride: Weekday? { didSet { save() } }
     var setProgress: [SetProgress] { didSet { save() } }
     var selectedMealIDs: Set<String> { didSet { save() } }
@@ -27,8 +29,20 @@ final class LocalAppState {
     var workoutLogs: [WorkoutLog] { didSet { save() } }
     var weeklyCheckIns: [WeeklyCheckIn] { didSet { save() } }
 
+    var selectedProgram: TrainingProgram {
+        ProgramSeed.program(id: selectedProgramID) ?? ProgramSeed.defaultProgram
+    }
+
+    func selectProgram(id: String) {
+        guard id != selectedProgramID else { return }
+        selectedProgramID = id
+        selectedMealIDs.removeAll()
+        checkedGroceryItemIDs.removeAll()
+    }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        self.selectedProgramID = ProgramSeed.defaultProgramID
         self.selectedDayOverride = nil
         self.setProgress = []
         self.selectedMealIDs = []
@@ -213,6 +227,7 @@ final class LocalAppState {
         isRestoring = true
         defer { isRestoring = false }
 
+        selectedProgramID = snapshot.selectedProgramID ?? ProgramSeed.defaultProgramID
         selectedDayOverride = snapshot.selectedDayOverride
         setProgress = snapshot.setProgress
         selectedMealIDs = snapshot.selectedMealIDs
@@ -226,6 +241,7 @@ final class LocalAppState {
         guard !isRestoring else { return }
 
         let snapshot = Snapshot(
+            selectedProgramID: selectedProgramID,
             selectedDayOverride: selectedDayOverride,
             setProgress: setProgress,
             selectedMealIDs: selectedMealIDs,

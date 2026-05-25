@@ -3,8 +3,12 @@ import SwiftUI
 struct GroceryView: View {
     let state: LocalAppState
 
+    private var selectedProgram: TrainingProgram {
+        state.selectedProgram
+    }
+
     private var selectedMeals: [MealTemplate] {
-        state.selectedMeals(from: ProgramSeed.mealTemplates)
+        state.selectedMeals(from: state.selectedProgram.mealTemplates)
     }
 
     private var grocerySections: [GrocerySection] {
@@ -32,7 +36,7 @@ struct GroceryView: View {
 
     private var mealPickerSection: some View {
         ForEach(MealKind.allCases) { kind in
-            let meals = ProgramSeed.mealTemplates.filter { $0.kind == kind }
+            let meals = selectedProgram.mealTemplates.filter { $0.kind == kind }
             if !meals.isEmpty {
                 Section(mealKindTitle(kind)) {
                     ForEach(meals) { meal in

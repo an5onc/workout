@@ -1,9 +1,154 @@
 import Foundation
 
 enum ProgramSeed {
-    static let nutritionTargets = NutritionTargets(calories: 1600, proteinGrams: 145, fatGrams: 50, carbsGrams: 145, waterOunces: 100)
+    static let defaultProgramID = "lower-body-strength-recomp"
 
-    static let quickProteinAnchors: [QuickProteinAnchor] = [
+    static let programs: [TrainingProgram] = [
+        strengthProgram,
+        weightLossProgram
+    ]
+
+    static var defaultProgram: TrainingProgram {
+        program(id: defaultProgramID) ?? strengthProgram
+    }
+
+    static func program(id: String) -> TrainingProgram? {
+        programs.first { $0.id == id }
+    }
+
+    static var nutritionTargets: NutritionTargets {
+        defaultProgram.nutritionTargets
+    }
+
+    static var quickProteinAnchors: [QuickProteinAnchor] {
+        defaultProgram.quickProteinAnchors
+    }
+
+    static var weeklySchedule: [WorkoutDay] {
+        defaultProgram.weeklySchedule
+    }
+
+    static var mealTemplates: [MealTemplate] {
+        defaultProgram.mealTemplates
+    }
+
+    private static let strengthProgram = TrainingProgram(
+        id: defaultProgramID,
+        name: "Lower Body Strength + Recomp",
+        goal: "Build muscle and burn fat",
+        summary: "A lower-body-forward resistance plan for glutes, legs, upper-body balance, and high-protein recomposition.",
+        weeklyStructure: [
+            "3 lower-body strength days",
+            "2 upper-body support days",
+            "2 recovery and prep days"
+        ],
+        prepSteps: [
+            "Cook proteins",
+            "Prep carbs and produce",
+            "Stage the week"
+        ],
+        nutritionTargets: strengthNutritionTargets,
+        quickProteinAnchors: strengthQuickProteinAnchors,
+        weeklySchedule: strengthWeeklySchedule,
+        mealTemplates: strengthMealTemplates
+    )
+
+    private static let weightLossProgram = TrainingProgram(
+        id: "weight-loss-foundation",
+        name: "Weight Loss Foundation",
+        goal: "Weight loss",
+        summary: "A sustainable fat-loss plan with full-body strength, low-impact conditioning, core work, mobility, and simple high-protein meals.",
+        weeklyStructure: [
+            "3 full-body strength days",
+            "2 low-impact conditioning days",
+            "1 mobility and core day",
+            "1 rest and prep day"
+        ],
+        prepSteps: [
+            "Pick lean protein anchors for four meals",
+            "Prep grab-and-go produce",
+            "Stage walking shoes, water, and quick protein"
+        ],
+        nutritionTargets: NutritionTargets(calories: 1450, proteinGrams: 135, fatGrams: 45, carbsGrams: 125, waterOunces: 100),
+        quickProteinAnchors: [
+            QuickProteinAnchor(id: "whey", label: "Whey", proteinGrams: 25),
+            QuickProteinAnchor(id: "greek-yogurt", label: "Greek yogurt", proteinGrams: 20),
+            QuickProteinAnchor(id: "turkey", label: "Turkey", proteinGrams: 28),
+            QuickProteinAnchor(id: "eggs", label: "Eggs", proteinGrams: 12),
+            QuickProteinAnchor(id: "cottage-cheese", label: "Cottage cheese", proteinGrams: 24)
+        ],
+        weeklySchedule: [
+            WorkoutDay(id: .sunday, name: "Rest + prep", focus: "Recovery", subtitle: "Full rest, grocery reset, and light walking if desired.", isRestDay: true, exercises: []),
+            WorkoutDay(id: .monday, name: "Full Body A", focus: "Strength + conditioning", subtitle: "Big movements, steady pace, short finisher.", isRestDay: false, exercises: [
+                exercise("wl-goblet-squat", "Goblet Squat", 3, "10-12", "60s", "Stay tall and control the lower."),
+                exercise("wl-db-bench-press", "DB Bench Press", 3, "10", "60-75s", "Smooth reps, stop before form breaks."),
+                exercise("wl-seated-cable-row", "Seated Cable Row", 3, "12", "60s", "Pull elbows to ribs."),
+                exercise("wl-incline-walk-finisher", "Incline Walk Finisher", 1, "12 minutes", "Easy pace", "Use a pace you can sustain while breathing hard.")
+            ]),
+            WorkoutDay(id: .tuesday, name: "Zone 2 Walk", focus: "Conditioning", subtitle: "Low-impact cardio for calorie burn and recovery.", isRestDay: false, exercises: [
+                exercise("wl-incline-walk", "Incline Treadmill Walk", 1, "30-40 minutes", "Steady", "Nasal breathing if possible, no running required."),
+                exercise("wl-dead-bug", "Dead Bug", 3, "8/side", "45s", "Keep low back down.")
+            ]),
+            WorkoutDay(id: .wednesday, name: "Full Body B", focus: "Strength + core", subtitle: "Hinge, press, pull, and core stability.", isRestDay: false, exercises: [
+                exercise("wl-db-romanian-deadlift", "DB Romanian Deadlift", 3, "10", "75s", "Push hips back and keep weights close."),
+                exercise("wl-lat-pulldown", "Lat Pulldown", 3, "10-12", "60s", "Drive elbows down."),
+                exercise("wl-step-up", "DB Step-Up", 3, "8/leg", "60s", "Drive through the full foot."),
+                exercise("wl-pallof-press", "Pallof Press", 3, "10/side", "45s", "Resist rotation.")
+            ]),
+            WorkoutDay(id: .thursday, name: "Mobility + Core", focus: "Mobility", subtitle: "Move, recover, and keep the habit alive.", isRestDay: false, exercises: [
+                exercise("wl-bike-easy", "Easy Bike", 1, "15-20 minutes", "Steady", "Keep this conversational."),
+                exercise("wl-hip-flexor-mobility", "Hip Flexor Mobility", 2, "45 seconds/side", "30s", "Squeeze the back glute."),
+                exercise("wl-side-plank", "Side Plank", 3, "20-30 seconds/side", "45s", "Keep ribs stacked.")
+            ]),
+            WorkoutDay(id: .friday, name: "Full Body C", focus: "Strength + conditioning", subtitle: "Moderate strength work and a machine cardio finish.", isRestDay: false, exercises: [
+                exercise("wl-leg-press", "Leg Press", 3, "12", "60-75s", "Controlled reps, knees tracking."),
+                exercise("wl-machine-chest-press", "Machine Chest Press", 3, "10-12", "60s", "Control the return."),
+                exercise("wl-machine-row", "Machine Row", 3, "12", "60s", "Pause with shoulder blades squeezed."),
+                exercise("wl-elliptical-finisher", "Elliptical Finisher", 1, "10-15 minutes", "Easy pace", "Keep moving without sprinting.")
+            ]),
+            WorkoutDay(id: .saturday, name: "Long Walk + Core", focus: "Conditioning", subtitle: "Long easy movement and light core work.", isRestDay: false, exercises: [
+                exercise("wl-long-walk", "Outdoor or Treadmill Walk", 1, "40-60 minutes", "Steady", "Stay relaxed and keep the pace repeatable."),
+                exercise("wl-plank", "Plank", 3, "30-45 seconds", "45s", "Squeeze glutes and breathe.")
+            ])
+        ],
+        mealTemplates: [
+            meal("egg-white-breakfast-wrap", .breakfast, "Egg White Breakfast Wrap", "Egg whites, whole egg, spinach, salsa, high-fiber tortilla.", 320, 32, 9, 30, [
+                ingredient("egg-whites", "Egg whites", "3/4 cup", .dairyEggs),
+                ingredient("eggs", "Egg", "1", .dairyEggs),
+                ingredient("spinach", "Spinach", "1 cup", .produce),
+                ingredient("salsa", "Salsa", "2 tbsp", .pantry),
+                ingredient("high-fiber-tortilla", "High-fiber tortilla", "1", .pantry)
+            ]),
+            meal("turkey-lettuce-bowl", .lunch, "Turkey Lettuce Bowl", "Lean turkey, lettuce, cucumber, tomatoes, rice, Greek yogurt dressing.", 390, 40, 11, 34, [
+                ingredient("lean-ground-turkey", "Lean ground turkey", "5 oz", .meatSeafood),
+                ingredient("romaine", "Romaine lettuce", "2 cups", .produce),
+                ingredient("cucumber", "Cucumber", "1/2", .produce),
+                ingredient("tomatoes", "Cherry tomatoes", "1/2 cup", .produce),
+                ingredient("brown-rice", "Brown rice", "1/3 cup cooked", .pantry),
+                ingredient("greek-yogurt", "Non-fat Greek yogurt", "1/4 cup", .dairyEggs)
+            ]),
+            meal("chicken-veggie-skillet", .dinner, "Chicken Veggie Skillet", "Chicken breast, zucchini, peppers, cauliflower rice, avocado.", 430, 43, 16, 28, [
+                ingredient("chicken-breast", "Boneless skinless chicken breast", "5 oz", .meatSeafood),
+                ingredient("zucchini", "Zucchini", "1 cup", .produce),
+                ingredient("bell-peppers", "Bell peppers", "1 cup", .produce),
+                ingredient("cauliflower-rice", "Cauliflower rice", "1 cup", .produce),
+                ingredient("avocado", "Avocado", "1/4", .produce)
+            ]),
+            meal("cottage-cheese-berries", .snack, "Cottage Cheese + Berries", "Cottage cheese, berries, cinnamon.", 220, 24, 4, 22, [
+                ingredient("cottage-cheese", "Low-fat cottage cheese", "1 cup", .dairyEggs),
+                ingredient("berries", "Mixed berries", "1/2 cup", .produce),
+                ingredient("cinnamon", "Cinnamon", "1 tsp", .pantry)
+            ]),
+            meal("protein-shake", .snack, "Protein Shake", "Whey with water or almond milk.", 120, 25, 1, 3, [
+                ingredient("whey-protein", "Whey protein", "1 scoop", .supplementsExtras),
+                ingredient("almond-milk", "Unsweetened almond milk", "1 cup", .dairyEggs)
+            ])
+        ]
+    )
+
+    private static let strengthNutritionTargets = NutritionTargets(calories: 1600, proteinGrams: 145, fatGrams: 50, carbsGrams: 145, waterOunces: 100)
+
+    private static let strengthQuickProteinAnchors: [QuickProteinAnchor] = [
         QuickProteinAnchor(id: "whey", label: "Whey", proteinGrams: 25),
         QuickProteinAnchor(id: "greek-yogurt", label: "Greek yogurt", proteinGrams: 20),
         QuickProteinAnchor(id: "chicken", label: "Chicken", proteinGrams: 30),
@@ -11,7 +156,7 @@ enum ProgramSeed {
         QuickProteinAnchor(id: "tuna", label: "Tuna", proteinGrams: 25)
     ]
 
-    static let weeklySchedule: [WorkoutDay] = [
+    private static let strengthWeeklySchedule: [WorkoutDay] = [
         WorkoutDay(id: .sunday, name: "Rest day + meal prep", focus: "Rest", subtitle: "Full rest. Sunday meal prep day.", isRestDay: true, exercises: []),
         WorkoutDay(id: .monday, name: "Lower A", focus: "Glute + Quad", subtitle: "Compound glute-builder, then quad-dominant work.", isRestDay: false, exercises: [
             exercise("barbell-hip-thrust", "Barbell Hip Thrust", 4, "8-10", "90-120s", "Top set is the heaviest."),
@@ -54,7 +199,7 @@ enum ProgramSeed {
         ])
     ]
 
-    static let mealTemplates: [MealTemplate] = [
+    private static let strengthMealTemplates: [MealTemplate] = [
         meal("protein-oatmeal", .breakfast, "Protein Oatmeal", "Oats, whey, peanut butter, banana, cinnamon.", 410, 31, 11, 48, [
             ingredient("rolled-oats", "Rolled oats", "1/2 cup", .pantry),
             ingredient("whey-protein", "Whey protein", "1 scoop", .supplementsExtras),

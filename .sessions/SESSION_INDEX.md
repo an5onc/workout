@@ -1,0 +1,19 @@
+# Session Index
+
+## Latest Session
+
+- **2026-05-24 (Session 02)** -> [2026-05-24__session-02.md](2026-05-24__session-02.md)
+  - Added selectable in-app training programs, introduced a Weight Loss Foundation plan, and wired Today/Food/Grocery/Plan to the selected program.
+
+## Previous Sessions
+
+- **2026-05-24 (Session 01)** -> [2026-05-24__session-01.md](2026-05-24__session-01.md)
+  - Created durable project handoff docs for the Workout iOS app, added the session system, documented current stack/build truth, and verified available project checks.
+
+## How To Use
+
+1. Read `AGENTS.md`.
+2. Read the newest entry in this index.
+3. Open the linked session file.
+4. Run `git status --short`.
+5. Continue from the latest session's "Next Recommended Task".

@@ -1,7 +1,12 @@
 import SwiftUI
 
 struct PlanView: View {
+    let state: LocalAppState
     @State private var exerciseSearchText = ""
+
+    private var selectedProgram: TrainingProgram {
+        state.selectedProgram
+    }
 
     private var filteredExercises: [Exercise] {
         let exercises = exerciseLibrary
@@ -21,7 +26,7 @@ struct PlanView: View {
     private var exerciseLibrary: [Exercise] {
         var seenIDs = Set<String>()
 
-        return ProgramSeed.weeklySchedule
+        return state.selectedProgram.weeklySchedule
             .flatMap(\.exercises)
             .filter { exercise in
                 seenIDs.insert(exercise.id).inserted
@@ -30,12 +35,13 @@ struct PlanView: View {
     }
 
     private var groceryReferenceSections: [GrocerySection] {
-        GroceryListGenerator.generate(from: ProgramSeed.mealTemplates)
+        GroceryListGenerator.generate(from: selectedProgram.mealTemplates)
     }
 
     var body: some View {
         NavigationStack {
             List {
+                programSelectionSection
                 structureSection
                 weeklyScheduleSection
                 exerciseLibrarySection
@@ -48,17 +54,77 @@ struct PlanView: View {
         }
     }
 
+    private var programSelectionSection: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Current plan")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AppTheme.accent)
+                Text(state.selectedProgram.name)
+                    .font(.title3.weight(.bold))
+                Text(selectedProgram.summary)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.vertical, 4)
+
+            ForEach(ProgramSeed.programs) { program in
+                programOptionRow(program)
+            }
+
+            Text("Switching plans resets Grocery picks so old meal selections do not carry into the new plan.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func programOptionRow(_ program: TrainingProgram) -> some View {
+        let isCurrent = program.id == state.selectedProgram.id
+
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: isCurrent ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isCurrent ? AppTheme.accent : .secondary)
+                    .font(.title3)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(program.name)
+                        .font(.headline)
+                    Text(program.goal)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(AppTheme.accent)
+                    Text(program.weeklyStructure.joined(separator: " / "))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+
+                Spacer()
+            }
+
+            Button(isCurrent ? "Current plan" : "Use this plan") {
+                state.selectProgram(id: program.id)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+            .disabled(isCurrent)
+        }
+        .padding(.vertical, 4)
+    }
+
     private var structureSection: some View {
         Section("12-week structure") {
-            planPhase("Weeks 1-4", "Build repeatable form, leave 1-2 reps in reserve, and log baseline loads.")
-            planPhase("Weeks 5-8", "Add load or reps when sets land cleanly inside the target range.")
-            planPhase("Weeks 9-12", "Keep technique strict, push top sets, then deload after week 12.")
+            ForEach(selectedProgram.weeklyStructure, id: \.self) { item in
+                Text(item)
+                    .font(.subheadline)
+                    .padding(.vertical, 3)
+            }
         }
     }
 
     private var weeklyScheduleSection: some View {
         Section("Weekly schedule") {
-            ForEach(ProgramSeed.weeklySchedule) { day in
+            ForEach(state.selectedProgram.weeklySchedule) { day in
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(alignment: .firstTextBaseline) {
                         Text(weekdayTitle(day.id))
@@ -120,13 +186,13 @@ struct PlanView: View {
 
     private var nutritionReferenceSection: some View {
         Section("Nutrition reference") {
-            LabeledContent("Calories", value: "\(ProgramSeed.nutritionTargets.calories)")
-            LabeledContent("Protein", value: "\(ProgramSeed.nutritionTargets.proteinGrams)g")
-            LabeledContent("Fat", value: "\(ProgramSeed.nutritionTargets.fatGrams)g")
-            LabeledContent("Carbs", value: "\(ProgramSeed.nutritionTargets.carbsGrams)g")
-            LabeledContent("Water", value: "\(ProgramSeed.nutritionTargets.waterOunces) oz")
+            LabeledContent("Calories", value: "\(selectedProgram.nutritionTargets.calories)")
+            LabeledContent("Protein", value: "\(state.selectedProgram.nutritionTargets.proteinGrams)g")
+            LabeledContent("Fat", value: "\(selectedProgram.nutritionTargets.fatGrams)g")
+            LabeledContent("Carbs", value: "\(selectedProgram.nutritionTargets.carbsGrams)g")
+            LabeledContent("Water", value: "\(selectedProgram.nutritionTargets.waterOunces) oz")
 
-            ForEach(ProgramSeed.mealTemplates) { meal in
+            ForEach(selectedProgram.mealTemplates) { meal in
                 VStack(alignment: .leading, spacing: 4) {
                     Text(meal.name)
                         .font(.headline)
@@ -152,9 +218,11 @@ struct PlanView: View {
 
     private var sundayPrepSection: some View {
         Section("Sunday prep") {
-            prepStep("Cook proteins", "Batch chicken, salmon, eggs, or another lean protein anchor.")
-            prepStep("Prep carbs and produce", "Cook rice or potatoes, wash produce, and portion vegetables.")
-            prepStep("Stage the week", "Pick meal templates in Grocery, shop once, and keep quick protein available.")
+            ForEach(selectedProgram.prepSteps, id: \.self) { step in
+                Text(step)
+                    .font(.subheadline)
+                    .padding(.vertical, 3)
+            }
         }
     }
 

@@ -21,8 +21,10 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ansoncordeiro.WorkoutApp
+        DEVELOPMENT_TEAM: FNZS4MVS45
         GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CFBundleDisplayName: Workout
+        INFOPLIST_KEY_CFBundleDisplayName: "I'd Lift That"
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.healthcare-fitness
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
   WorkoutAppTests:

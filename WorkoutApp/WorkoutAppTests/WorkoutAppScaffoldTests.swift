@@ -22,19 +22,19 @@ final class WorkoutAppScaffoldTests: XCTestCase {
         let planViewPath = sourcePath("WorkoutApp/Features/Plan/PlanView.swift")
 
         XCTAssertTrue(FileManager.default.fileExists(atPath: planViewPath))
-        XCTAssertTrue(rootTabView.contains("PlanView()"))
+        XCTAssertTrue(rootTabView.contains("PlanView(state: state)"))
 
         let planView = try String(contentsOfFile: planViewPath, encoding: .utf8)
         XCTAssertTrue(planView.contains("struct PlanView: View"))
         XCTAssertTrue(planView.contains(".searchable"))
         XCTAssertTrue(planView.contains("Link(\"Demo\""))
-        XCTAssertTrue(planView.contains("ProgramSeed.weeklySchedule"))
+        XCTAssertTrue(planView.contains("state.selectedProgram.weeklySchedule"))
     }
 
     func testPlanGroceryReferenceUsesMergedGrocerySections() throws {
         let planView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Plan/PlanView.swift"), encoding: .utf8)
 
-        XCTAssertTrue(planView.contains("GroceryListGenerator.generate(from: ProgramSeed.mealTemplates)"))
+        XCTAssertTrue(planView.contains("GroceryListGenerator.generate(from: selectedProgram.mealTemplates)"))
         XCTAssertTrue(planView.contains("ForEach(section.items)"))
         XCTAssertFalse(planView.contains("ForEach(section.ingredients"))
     }
@@ -71,6 +71,22 @@ final class WorkoutAppScaffoldTests: XCTestCase {
         XCTAssertFalse(prepAheadView.contains("restTimer"))
         XCTAssertFalse(prepAheadView.contains("ExerciseCardView("))
         XCTAssertTrue(prepAheadView.contains("PrepAheadExerciseCard"))
+    }
+
+    func testFeatureScreensUseSelectedProgramContent() throws {
+        let todayView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Today/TodayView.swift"), encoding: .utf8)
+        let rootTabView = try String(contentsOfFile: sourcePath("WorkoutApp/App/RootTabView.swift"), encoding: .utf8)
+        let foodView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Food/FoodView.swift"), encoding: .utf8)
+        let groceryView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Grocery/GroceryView.swift"), encoding: .utf8)
+        let planView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Plan/PlanView.swift"), encoding: .utf8)
+
+        XCTAssertTrue(todayView.contains("state.selectedProgram"))
+        XCTAssertTrue(rootTabView.contains("state.selectedProgram.weeklySchedule"))
+        XCTAssertTrue(foodView.contains("state.selectedProgram"))
+        XCTAssertTrue(groceryView.contains("state.selectedProgram"))
+        XCTAssertTrue(planView.contains("state.selectedProgram"))
+        XCTAssertTrue(planView.contains("state.selectProgram(id: program.id)"))
+        XCTAssertTrue(planView.contains("Use this plan"))
     }
 
     private func sourcePath(_ path: String) -> String {

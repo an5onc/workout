@@ -17,8 +17,12 @@ struct FoodView: View {
         state.foodLog(for: today)
     }
 
+    private var selectedProgram: TrainingProgram {
+        state.selectedProgram
+    }
+
     private var checkedMeals: [MealTemplate] {
-        state.selectedFoodMeals(from: ProgramSeed.mealTemplates, date: today)
+        state.selectedFoodMeals(from: state.selectedProgram.mealTemplates, date: today)
     }
 
     private var selectedMealProteinTotal: Int {
@@ -30,7 +34,7 @@ struct FoodView: View {
     }
 
     private var proteinProgress: Double {
-        ProteinTracker.progress(total: totalProtein, target: ProgramSeed.nutritionTargets.proteinGrams)
+        ProteinTracker.progress(total: totalProtein, target: selectedProgram.nutritionTargets.proteinGrams)
     }
 
     var body: some View {
@@ -50,9 +54,9 @@ struct FoodView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .firstTextBaseline) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("\(ProgramSeed.nutritionTargets.calories) calories")
+                        Text("\(selectedProgram.nutritionTargets.calories) calories")
                             .font(.title2.bold())
-                        Text("\(ProgramSeed.nutritionTargets.proteinGrams)g protein target")
+                        Text("\(state.selectedProgram.nutritionTargets.proteinGrams)g protein target")
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -70,9 +74,9 @@ struct FoodView: View {
             }
             .padding(.vertical, 4)
 
-            LabeledContent("Fat", value: "\(ProgramSeed.nutritionTargets.fatGrams)g")
-            LabeledContent("Carbs", value: "\(ProgramSeed.nutritionTargets.carbsGrams)g")
-            LabeledContent("Water", value: "\(ProgramSeed.nutritionTargets.waterOunces) oz")
+            LabeledContent("Fat", value: "\(selectedProgram.nutritionTargets.fatGrams)g")
+            LabeledContent("Carbs", value: "\(selectedProgram.nutritionTargets.carbsGrams)g")
+            LabeledContent("Water", value: "\(selectedProgram.nutritionTargets.waterOunces) oz")
         }
     }
 
@@ -80,7 +84,7 @@ struct FoodView: View {
         Section("Quick protein") {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack {
-                    ForEach(ProgramSeed.quickProteinAnchors) { anchor in
+                    ForEach(state.selectedProgram.quickProteinAnchors) { anchor in
                         Button {
                             state.addQuickProtein(anchor.proteinGrams, date: currentDate())
                         } label: {
@@ -116,7 +120,7 @@ struct FoodView: View {
 
     private var mealChecklistSection: some View {
         ForEach(MealKind.allCases) { kind in
-            let meals = ProgramSeed.mealTemplates.filter { $0.kind == kind }
+            let meals = selectedProgram.mealTemplates.filter { $0.kind == kind }
             if !meals.isEmpty {
                 Section(mealKindTitle(kind)) {
                     ForEach(meals) { meal in

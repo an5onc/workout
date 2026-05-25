@@ -31,6 +31,19 @@ struct NutritionTargets: Hashable, Codable {
     let waterOunces: Int
 }
 
+struct TrainingProgram: Identifiable, Hashable, Codable {
+    let id: String
+    let name: String
+    let goal: String
+    let summary: String
+    let weeklyStructure: [String]
+    let prepSteps: [String]
+    let nutritionTargets: NutritionTargets
+    let quickProteinAnchors: [QuickProteinAnchor]
+    let weeklySchedule: [WorkoutDay]
+    let mealTemplates: [MealTemplate]
+}
+
 struct QuickProteinAnchor: Identifiable, Hashable, Codable {
     let id: String
     let label: String

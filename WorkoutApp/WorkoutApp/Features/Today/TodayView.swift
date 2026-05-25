@@ -13,14 +13,22 @@ struct TodayView: View {
     @State private var manuallyExpandedExerciseIDs: Set<String> = []
     @State private var manuallyCollapsedExerciseIDs: Set<String> = []
     @State private var lastActiveExerciseID: String?
-    private let planner = WorkoutPlanner(schedule: ProgramSeed.weeklySchedule)
+
+    private var selectedProgram: TrainingProgram {
+        state.selectedProgram
+    }
+
+    private var planner: WorkoutPlanner {
+        WorkoutPlanner(schedule: state.selectedProgram.weeklySchedule)
+    }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    let workout = planner.workout(for: currentWeekday(), override: state.selectedDayOverride) ?? ProgramSeed.weeklySchedule[1]
+                    let workout = planner.workout(for: currentWeekday(), override: state.selectedDayOverride) ?? selectedProgram.weeklySchedule[1]
                     brandBanner
+                    currentPlanLabel
                     prepAheadSection
                     header(for: workout)
 
@@ -66,9 +74,27 @@ struct TodayView: View {
             .accessibilityLabel("I'd Lift That")
     }
 
+    private var currentPlanLabel: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "target")
+                .foregroundStyle(AppTheme.accent)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Current plan")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Text(state.selectedProgram.name)
+                    .font(.subheadline.weight(.semibold))
+            }
+            Spacer()
+        }
+        .padding()
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
     private var prepAheadSection: some View {
         let futureDate = prepAheadDate(offset: selectedPrepAheadOffset)
-        let futureWorkout = planner.workout(for: futureDate) ?? ProgramSeed.weeklySchedule[1]
+        let futureWorkout = planner.workout(for: futureDate) ?? selectedProgram.weeklySchedule[1]
 
         return VStack(alignment: .leading, spacing: 10) {
             HStack {

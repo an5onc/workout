@@ -23,6 +23,7 @@ final class LocalAppStateTests: XCTestCase {
 
     func testRoundTripRestoreOfAllPersistedFields() {
         let state = LocalAppState(defaults: defaults)
+        state.selectedProgramID = "weight-loss-foundation"
         state.selectedDayOverride = .friday
         state.setProgress = [
             SetProgress(exerciseID: "hip-thrust", completedSets: [0, 2], weightText: "135", repsText: "10", rpeText: "8")
@@ -36,10 +37,46 @@ final class LocalAppStateTests: XCTestCase {
         let restored = LocalAppState(defaults: defaults)
 
         XCTAssertEqual(restored.selectedDayOverride, .friday)
+        XCTAssertEqual(restored.selectedProgramID, "weight-loss-foundation")
+        XCTAssertEqual(restored.selectedProgram.id, "weight-loss-foundation")
         XCTAssertEqual(restored.setProgress, state.setProgress)
         XCTAssertEqual(restored.selectedMealIDs, ["breakfast-a", "dinner-b"])
         XCTAssertEqual(restored.checkedGroceryItemIDs, ["eggs", "rice"])
         XCTAssertEqual(restored.foodLogs, state.foodLogs)
+    }
+
+    func testSelectedProgramDefaultsAndFallsBackForInvalidID() {
+        let state = LocalAppState(defaults: defaults)
+
+        XCTAssertEqual(state.selectedProgramID, ProgramSeed.defaultProgramID)
+        XCTAssertEqual(state.selectedProgram.id, ProgramSeed.defaultProgramID)
+
+        state.selectedProgramID = "missing-program"
+
+        XCTAssertEqual(state.selectedProgram.id, ProgramSeed.defaultProgramID)
+    }
+
+    func testSelectingDifferentProgramClearsGrocerySessionState() {
+        let state = LocalAppState(defaults: defaults)
+        state.selectedMealIDs = ["protein-oatmeal"]
+        state.checkedGroceryItemIDs = ["rolled-oats"]
+
+        state.selectProgram(id: "weight-loss-foundation")
+
+        XCTAssertEqual(state.selectedProgramID, "weight-loss-foundation")
+        XCTAssertTrue(state.selectedMealIDs.isEmpty)
+        XCTAssertTrue(state.checkedGroceryItemIDs.isEmpty)
+    }
+
+    func testSelectingCurrentProgramKeepsGrocerySessionState() {
+        let state = LocalAppState(defaults: defaults)
+        state.selectedMealIDs = ["protein-oatmeal"]
+        state.checkedGroceryItemIDs = ["rolled-oats"]
+
+        state.selectProgram(id: ProgramSeed.defaultProgramID)
+
+        XCTAssertEqual(state.selectedMealIDs, ["protein-oatmeal"])
+        XCTAssertEqual(state.checkedGroceryItemIDs, ["rolled-oats"])
     }
 
     func testToggleSetPersistsAndTogglesOff() {
