@@ -2,10 +2,13 @@
 
 ## Latest Session
 
-- **2026-05-25 (Session 07)** -> [2026-05-25__session-07.md](2026-05-25__session-07.md)
-  - Added adaptive training logic so physical assessment results handpick push, cardio, and joint-friendly future exercises.
+- **2026-05-25 (Session 08)** -> [2026-05-25__session-08.md](2026-05-25__session-08.md)
+  - Finalized adaptive training for user testing with Plan explanations and adaptive tags for the original strength/recomp plan.
 
 ## Previous Sessions
+
+- **2026-05-25 (Session 07)** -> [2026-05-25__session-07.md](2026-05-25__session-07.md)
+  - Added adaptive training logic so physical assessment results handpick push, cardio, and joint-friendly future exercises.
 
 - **2026-05-25 (Session 06)** -> [2026-05-25__session-06.md](2026-05-25__session-06.md)
   - Added dedicated week-6/week-12 retest flow, refined assessment scoring, made post-retest weeks 7-12 adjustments visible, and verified simulator tests/build.

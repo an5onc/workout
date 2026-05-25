@@ -132,13 +132,13 @@ At the end of every substantive session:
 <claude-mem-context>
 # Memory Context
 
-# [workout] recent context, 2026-05-25 9:45am MDT
+# [workout] recent context, 2026-05-25 9:47am MDT
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 10 obs (4,621t read) | 425,865t work | 99% savings
+Stats: 13 obs (6,099t read) | 528,045t work | 99% savings
 
 ### May 24, 2026
 297 9:32p 🔵 Workout project lacks session documentation and has pending Xcode changes
@@ -152,6 +152,9 @@ Stats: 10 obs (4,621t read) | 425,865t work | 99% savings
 ### May 25, 2026
 306 9:39a 🟣 Dedicated week-6/week-12 retest flow for plan personalization
 307 9:40a ⚖️ Workout Completion Tracking Feature Designed and Ready for Implementation
+308 9:45a 🟣 Adaptive Training Engine: Assessment Results Now Handpick Future Exercises
+309 9:47a 🔵 Session Reading Finishing-a-Development-Branch Skill
+310 " ✅ Adaptive Training Engine Merged to Main Branch
 
-Access 426k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 528k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

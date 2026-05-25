@@ -69,6 +69,31 @@ enum PersonalizationCalculator {
         )
     }
 
+    static func adaptiveExplanations(for profile: UserProfile, assessment: FitnessAssessment) -> [String] {
+        let assignedLevel = level(for: profile, assessment: assessment)
+        let focuses = trainingFocuses(for: profile, assessment: assessment, level: assignedLevel)
+        var explanations: [String] = []
+
+        if focuses.contains(.pushStrengthBase) {
+            explanations.append("Push-up result was low, so the plan uses incline push-up practice to build clean pressing strength.")
+        }
+        if focuses.contains(.aerobicBase) {
+            explanations.append("Step test or mile result showed aerobic base needs work, so conditioning is built around repeatable treadmill intervals.")
+        }
+        if focuses.contains(.jointFriendlyLoading) {
+            explanations.append("Difficulty rating or limitations were high, so lower-body choices favor stable, joint-friendly movements.")
+        }
+        if focuses.contains(.advancedProgression) {
+            explanations.append("Assessment results were advanced, so the next block adds harder push-up and run/walk interval progressions.")
+        }
+
+        if explanations.isEmpty {
+            explanations.append("Assessment results support the current exercise mix, so the plan mainly adjusts volume and progression.")
+        }
+
+        return explanations
+    }
+
     static func isRetestDue(
         program: PersonalizedProgram,
         assessments: [FitnessAssessment],

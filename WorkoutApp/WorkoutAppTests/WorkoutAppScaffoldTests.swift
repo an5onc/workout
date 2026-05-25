@@ -170,6 +170,18 @@ final class WorkoutAppScaffoldTests: XCTestCase {
         XCTAssertTrue(rootTabView.contains("1-mile treadmill"))
     }
 
+    func testPlanExplainsAdaptiveExerciseChoices() throws {
+        let planView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Plan/PlanView.swift"), encoding: .utf8)
+        let calculator = try String(contentsOfFile: sourcePath("WorkoutApp/Core/PersonalizationCalculator.swift"), encoding: .utf8)
+
+        XCTAssertTrue(planView.contains("adaptiveExplanationSection"))
+        XCTAssertTrue(planView.contains("Why these exercises"))
+        XCTAssertTrue(planView.contains("adaptiveExplanations"))
+        XCTAssertTrue(calculator.contains("adaptiveExplanations"))
+        XCTAssertTrue(calculator.contains("Push-up result was low"))
+        XCTAssertTrue(calculator.contains("Step test or mile result"))
+    }
+
     private func sourcePath(_ path: String) -> String {
         URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

@@ -181,26 +181,26 @@ enum ProgramSeed {
     private static let strengthWeeklySchedule: [WorkoutDay] = [
         WorkoutDay(id: .sunday, name: "Rest day + meal prep", focus: "Rest", subtitle: "Full rest. Sunday meal prep day.", isRestDay: true, exercises: []),
         WorkoutDay(id: .monday, name: "Lower A", focus: "Glute + Quad", subtitle: "Compound glute-builder, then quad-dominant work.", isRestDay: false, exercises: [
-            exercise("barbell-hip-thrust", "Barbell Hip Thrust", 4, "8-10", "90-120s", "Top set is the heaviest."),
-            exercise("heel-elevated-goblet-squat", "Heel-Elevated Goblet Squat", 3, "10", "75-90s", "Plates under heels, deep range."),
-            exercise("db-walking-lunge", "DB Walking Lunge", 3, "10/leg", "60-90s", "Long steps."),
-            exercise("leg-extension-machine", "Leg Extension Machine", 3, "12", "60s", "Squeeze at top, slow lower."),
-            exercise("standing-calf-raise", "Standing Calf Raise", 3, "15", "45-60s", "Full stretch at the bottom.")
+            exercise("barbell-hip-thrust", "Barbell Hip Thrust", 4, "8-10", "90-120s", "Top set is the heaviest.", tags: [.lowerStrength]),
+            exercise("heel-elevated-goblet-squat", "Heel-Elevated Goblet Squat", 3, "10", "75-90s", "Plates under heels, deep range.", tags: [.lowerStrength]),
+            exercise("db-walking-lunge", "DB Walking Lunge", 3, "10/leg", "60-90s", "Long steps.", tags: [.lowerStrength, .unilateral]),
+            exercise("leg-extension-machine", "Leg Extension Machine", 3, "12", "60s", "Squeeze at top, slow lower.", tags: [.lowerStrength, .lowImpact]),
+            exercise("standing-calf-raise", "Standing Calf Raise", 3, "15", "45-60s", "Full stretch at the bottom.", tags: [.lowImpact])
         ]),
         WorkoutDay(id: .tuesday, name: "Upper Push", focus: "Chest, shoulders, triceps", subtitle: "Chest, shoulders, triceps.", isRestDay: false, exercises: [
-            exercise("db-bench-press", "DB Bench Press", 3, "8-10", "90s", "Control the lowering."),
-            exercise("seated-db-shoulder-press", "Seated DB Shoulder Press", 3, "8-10", "90s", "Bench at 80-85 degrees."),
+            exercise("db-bench-press", "DB Bench Press", 3, "8-10", "90s", "Control the lowering.", tags: [.pushStrength]),
+            exercise("seated-db-shoulder-press", "Seated DB Shoulder Press", 3, "8-10", "90s", "Bench at 80-85 degrees.", tags: [.pushStrength]),
             exercise("cable-lateral-raise", "Cable Lateral Raise", 3, "12", "45-60s", "Lead with the elbow."),
-            exercise("incline-db-press", "Incline DB Press", 3, "10", "90s", "30 degrees, not steeper."),
-            exercise("triceps-rope-pushdown", "Triceps Rope Pushdown", 3, "12", "45-60s", "Elbows pinned to ribs."),
+            exercise("incline-db-press", "Incline DB Press", 3, "10", "90s", "30 degrees, not steeper.", tags: [.pushStrength]),
+            exercise("triceps-rope-pushdown", "Triceps Rope Pushdown", 3, "12", "45-60s", "Elbows pinned to ribs.", tags: [.pushStrength]),
             exercise("plank", "Plank", 3, "30-45 seconds", "60s", "Glutes squeezed.")
         ]),
         WorkoutDay(id: .wednesday, name: "Lower B", focus: "Glute + Hamstring", subtitle: "Posterior chain emphasis.", isRestDay: false, exercises: [
-            exercise("barbell-romanian-deadlift", "Barbell Romanian Deadlift", 4, "8-10", "90-120s", "Hinge, do not squat."),
-            exercise("cable-glute-kickback", "Cable Glute Kickback", 3, "12/leg", "45s", "Squeeze at the top."),
-            exercise("db-bulgarian-split-squat", "DB Bulgarian Split Squat", 3, "8/leg", "60-90s", "Slight forward lean."),
-            exercise("seated-hamstring-curl", "Seated Hamstring Curl", 3, "12", "60s", "Slow eccentric."),
-            exercise("hip-abduction-machine", "Hip Abduction Machine", 3, "15", "45-60s", "Lean forward 15 degrees."),
+            exercise("barbell-romanian-deadlift", "Barbell Romanian Deadlift", 4, "8-10", "90-120s", "Hinge, do not squat.", tags: [.lowerStrength]),
+            exercise("cable-glute-kickback", "Cable Glute Kickback", 3, "12/leg", "45s", "Squeeze at the top.", tags: [.lowerStrength, .unilateral]),
+            exercise("db-bulgarian-split-squat", "DB Bulgarian Split Squat", 3, "8/leg", "60-90s", "Slight forward lean.", tags: [.lowerStrength, .unilateral]),
+            exercise("seated-hamstring-curl", "Seated Hamstring Curl", 3, "12", "60s", "Slow eccentric.", tags: [.lowerStrength, .lowImpact]),
+            exercise("hip-abduction-machine", "Hip Abduction Machine", 3, "15", "45-60s", "Lean forward 15 degrees.", tags: [.lowerStrength, .lowImpact]),
             exercise("hanging-knee-raise", "Hanging Knee Raise", 3, "10-12", "60s", "Roll the hips up.")
         ]),
         WorkoutDay(id: .thursday, name: "Rest day", focus: "Rest", subtitle: "Full recovery. Optional 20-30 minute walk. No lifting.", isRestDay: true, exercises: []),
@@ -213,11 +213,11 @@ enum ProgramSeed {
             exercise("pallof-press", "Pallof Press", 3, "10/side", "45s", "Resist the rotation.")
         ]),
         WorkoutDay(id: .saturday, name: "Lower C", focus: "Glute Volume Day", subtitle: "Highest-volume glute day of the week.", isRestDay: false, exercises: [
-            exercise("smith-machine-hip-thrust", "Smith Machine Hip Thrust", 4, "12", "90s", "Push the weight."),
-            exercise("db-sumo-deadlift", "DB Sumo Deadlift", 3, "8", "90s", "Drive knees out."),
-            exercise("db-step-up", "DB Step-Up", 3, "10/leg", "60s", "Drive through the heel."),
-            exercise("cable-pull-through", "Cable Pull-Through", 3, "12", "60-75s", "Squeeze the glutes hard at the top."),
-            exercise("hip-abduction-machine-saturday", "Hip Abduction Machine", 3, "15 + drop set on last", "60s", "Drop set on last set.")
+            exercise("smith-machine-hip-thrust", "Smith Machine Hip Thrust", 4, "12", "90s", "Push the weight.", tags: [.lowerStrength]),
+            exercise("db-sumo-deadlift", "DB Sumo Deadlift", 3, "8", "90s", "Drive knees out.", tags: [.lowerStrength]),
+            exercise("db-step-up", "DB Step-Up", 3, "10/leg", "60s", "Drive through the heel.", tags: [.lowerStrength, .unilateral]),
+            exercise("cable-pull-through", "Cable Pull-Through", 3, "12", "60-75s", "Squeeze the glutes hard at the top.", tags: [.lowerStrength]),
+            exercise("hip-abduction-machine-saturday", "Hip Abduction Machine", 3, "15 + drop set on last", "60s", "Drop set on last set.", tags: [.lowerStrength, .lowImpact])
         ])
     ]
 

@@ -50,6 +50,7 @@ struct PlanView: View {
         NavigationStack {
             List {
                 programGoalOverviewSection
+                adaptiveExplanationSection
                 programSelectionSection
                 structureSection
                 weeklyScheduleSection
@@ -90,6 +91,16 @@ struct PlanView: View {
                 RetestFlowView(state: state, program: context.program, phase: context.phase)
             }
         }
+    }
+
+    private var adaptiveExplanations: [String] {
+        guard let profile = state.userProfile,
+              let personalizedProgram = state.personalizedPrograms.first(where: { $0.baseProgramID == state.selectedProgramID }),
+              let latestAssessment = state.fitnessAssessments.first(where: { $0.id == personalizedProgram.latestAssessmentID }) else {
+            return []
+        }
+
+        return PersonalizationCalculator.adaptiveExplanations(for: profile, assessment: latestAssessment)
     }
 
     private var programSelectionSection: some View {
@@ -163,6 +174,23 @@ struct PlanView: View {
         }
         .onChange(of: state.selectedProgram.id) { _, newProgramID in
             previewProgramID = newProgramID
+        }
+    }
+
+    private var adaptiveExplanationSection: some View {
+        let explanations = adaptiveExplanations
+
+        return Section("Why these exercises") {
+            if explanations.isEmpty {
+                Text("Personalize a plan to see how the assessment changes exercise choices.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(explanations, id: \.self) { explanation in
+                    Label(explanation, systemImage: "target")
+                        .font(.subheadline)
+                }
+            }
         }
     }
 

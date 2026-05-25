@@ -82,6 +82,36 @@ final class PersonalizationCalculatorTests: XCTestCase {
         XCTAssertTrue(program.generatedProgram.weeklyStructure.contains("Aerobic base: repeatable treadmill intervals"))
     }
 
+    func testStrengthPlanAlsoUsesAdaptiveExerciseTags() throws {
+        let base = try XCTUnwrap(ProgramSeed.program(id: ProgramSeed.defaultProgramID))
+        let profile = profile(weight: 180, limitations: "Knee soreness")
+        let program = PersonalizationCalculator.personalizedProgram(
+            base: base,
+            profile: profile,
+            assessment: assessment(pushUps: 4, steps: 72, mileSeconds: 980, stepDifficulty: 9, mileDifficulty: 8),
+            startDate: date(year: 2026, month: 5, day: 1),
+            calendar: calendar
+        )
+
+        let exerciseNames = program.generatedProgram.weeklySchedule.flatMap(\.exercises).map(\.name)
+
+        XCTAssertTrue(exerciseNames.contains("Incline Push-Up Practice"))
+        XCTAssertTrue(exerciseNames.contains("Supported Split Squat"))
+        XCTAssertTrue(program.generatedProgram.weeklyStructure.contains("Joint-friendly loading: stable lower-impact exercise choices"))
+    }
+
+    func testAdaptiveExplanationsDescribeExerciseChoicesForUsers() {
+        let profile = profile(weight: 220, limitations: "Knee soreness")
+        let explanations = PersonalizationCalculator.adaptiveExplanations(
+            for: profile,
+            assessment: assessment(pushUps: 4, steps: 52, mileSeconds: 1_120, stepDifficulty: 9, mileDifficulty: 8)
+        )
+
+        XCTAssertTrue(explanations.contains("Push-up result was low, so the plan uses incline push-up practice to build clean pressing strength."))
+        XCTAssertTrue(explanations.contains("Step test or mile result showed aerobic base needs work, so conditioning is built around repeatable treadmill intervals."))
+        XCTAssertTrue(explanations.contains("Difficulty rating or limitations were high, so lower-body choices favor stable, joint-friendly movements."))
+    }
+
     func testAdvancedAssessmentProgressesFutureExercises() throws {
         let base = try XCTUnwrap(ProgramSeed.program(id: "weight-loss-foundation"))
         let profile = profile(weight: 170, limitations: "")
