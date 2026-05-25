@@ -2,10 +2,19 @@
 
 ## Latest Session
 
-- **2026-05-24 (Session 04)** -> [2026-05-24__session-04.md](2026-05-24__session-04.md)
-  - Committed the completed selector refinement pass, scoped Food history by program, added goal-card plan previews, and added weight-loss Progress metrics.
+- **2026-05-25 (Session 07)** -> [2026-05-25__session-07.md](2026-05-25__session-07.md)
+  - Added adaptive training logic so physical assessment results handpick push, cardio, and joint-friendly future exercises.
 
 ## Previous Sessions
+
+- **2026-05-25 (Session 06)** -> [2026-05-25__session-06.md](2026-05-25__session-06.md)
+  - Added dedicated week-6/week-12 retest flow, refined assessment scoring, made post-retest weeks 7-12 adjustments visible, and verified simulator tests/build.
+
+- **2026-05-24 (Session 05)** -> [2026-05-24__session-05.md](2026-05-24__session-05.md)
+  - Planned and implemented plan personalization with profile inputs, baseline assessment, beginner/moderate/advanced generation, retest prompts, and assessment progress.
+
+- **2026-05-24 (Session 04)** -> [2026-05-24__session-04.md](2026-05-24__session-04.md)
+  - Committed the completed selector refinement pass, scoped Food history by program, added goal-card plan previews, and added weight-loss Progress metrics.
 
 - **2026-05-24 (Session 03)** -> [2026-05-24__session-03.md](2026-05-24__session-03.md)
   - Continued the selectable-program feature with program-scoped workout logs, a plan-switch confirmation dialog, weight-loss plan substitutions/meals, selector UI polish, simulator verification, and bundle-size measurement.

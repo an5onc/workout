@@ -14,6 +14,9 @@ final class LocalAppState {
         var foodLogs: [FoodLog]?
         var workoutLogs: [WorkoutLog]?
         var weeklyCheckIns: [WeeklyCheckIn]?
+        var userProfile: UserProfile?
+        var fitnessAssessments: [FitnessAssessment]?
+        var personalizedPrograms: [PersonalizedProgram]?
     }
 
     @ObservationIgnored private let defaults: UserDefaults
@@ -28,9 +31,15 @@ final class LocalAppState {
     var foodLogs: [FoodLog] { didSet { save() } }
     var workoutLogs: [WorkoutLog] { didSet { save() } }
     var weeklyCheckIns: [WeeklyCheckIn] { didSet { save() } }
+    var userProfile: UserProfile? { didSet { save() } }
+    var fitnessAssessments: [FitnessAssessment] { didSet { save() } }
+    var personalizedPrograms: [PersonalizedProgram] { didSet { save() } }
 
     var selectedProgram: TrainingProgram {
-        ProgramSeed.program(id: selectedProgramID) ?? ProgramSeed.defaultProgram
+        if let personalizedProgram = personalizedPrograms.first(where: { $0.baseProgramID == selectedProgramID }) {
+            return personalizedProgram.generatedProgram
+        }
+        return ProgramSeed.program(id: selectedProgramID) ?? ProgramSeed.defaultProgram
     }
 
     func selectProgram(id: String) {
@@ -51,6 +60,9 @@ final class LocalAppState {
         self.foodLogs = []
         self.workoutLogs = []
         self.weeklyCheckIns = []
+        self.userProfile = nil
+        self.fitnessAssessments = []
+        self.personalizedPrograms = []
         restore()
     }
 
@@ -220,6 +232,76 @@ final class LocalAppState {
         upsertFoodLog(log)
     }
 
+    func finalizePersonalizedProgram(
+        baseProgramID: String,
+        profile: UserProfile,
+        assessment: FitnessAssessment,
+        startDate: Date = Date()
+    ) {
+        guard let baseProgram = ProgramSeed.program(id: baseProgramID) else {
+            return
+        }
+
+        let computedLevel = PersonalizationCalculator.level(for: profile, assessment: assessment)
+        var normalizedAssessment = assessment
+        normalizedAssessment.computedLevel = computedLevel
+        let personalizedProgram = PersonalizationCalculator.personalizedProgram(
+            base: baseProgram,
+            profile: profile,
+            assessment: normalizedAssessment,
+            startDate: startDate
+        )
+
+        userProfile = profile
+        upsertFitnessAssessment(normalizedAssessment)
+        upsertPersonalizedProgram(personalizedProgram)
+        selectedProgramID = baseProgramID
+        selectedMealIDs.removeAll()
+        checkedGroceryItemIDs.removeAll()
+        setProgress = workoutLog(for: startDate).setProgress
+    }
+
+    func recordFitnessRetest(
+        baseProgramID: String,
+        phase: AssessmentPhase,
+        assessment: FitnessAssessment,
+        date: Date = Date()
+    ) {
+        guard phase != .baseline,
+              let profile = userProfile,
+              let baseProgram = ProgramSeed.program(id: baseProgramID),
+              let existingProgram = personalizedPrograms.first(where: { $0.baseProgramID == baseProgramID }) else {
+            return
+        }
+
+        let normalizedAssessment = normalizedRetestAssessment(
+            assessment,
+            phase: phase,
+            date: date,
+            profile: profile
+        )
+        var personalizedProgram = PersonalizationCalculator.personalizedProgram(
+            base: baseProgram,
+            profile: profile,
+            assessment: normalizedAssessment,
+            startDate: parsedDate(from: existingProgram.startDateKey) ?? date
+        )
+        personalizedProgram.baselineAssessmentID = existingProgram.baselineAssessmentID
+        personalizedProgram.latestAssessmentID = normalizedAssessment.id
+        personalizedProgram.generatedProgram = retestAdjustedProgram(
+            personalizedProgram.generatedProgram,
+            phase: phase,
+            level: personalizedProgram.assignedLevel
+        )
+
+        upsertFitnessAssessment(normalizedAssessment)
+        upsertPersonalizedProgram(personalizedProgram)
+        selectedProgramID = baseProgramID
+        selectedMealIDs.removeAll()
+        checkedGroceryItemIDs.removeAll()
+        setProgress = workoutLog(for: date).setProgress
+    }
+
     private func restore() {
         guard let data = defaults.data(forKey: storageKey),
               let snapshot = try? JSONDecoder().decode(Snapshot.self, from: data) else {
@@ -236,6 +318,9 @@ final class LocalAppState {
         foodLogs = snapshot.foodLogs ?? []
         workoutLogs = snapshot.workoutLogs ?? []
         weeklyCheckIns = snapshot.weeklyCheckIns ?? []
+        userProfile = snapshot.userProfile
+        fitnessAssessments = snapshot.fitnessAssessments ?? []
+        personalizedPrograms = snapshot.personalizedPrograms ?? []
     }
 
     private func save() {
@@ -250,7 +335,10 @@ final class LocalAppState {
             quickProteinAdds: nil,
             foodLogs: foodLogs,
             workoutLogs: workoutLogs,
-            weeklyCheckIns: weeklyCheckIns
+            weeklyCheckIns: weeklyCheckIns,
+            userProfile: userProfile,
+            fitnessAssessments: fitnessAssessments,
+            personalizedPrograms: personalizedPrograms
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         defaults.set(data, forKey: storageKey)
@@ -270,6 +358,75 @@ final class LocalAppState {
         } else {
             workoutLogs.append(log)
         }
+    }
+
+    private func upsertFitnessAssessment(_ assessment: FitnessAssessment) {
+        if let index = fitnessAssessments.firstIndex(where: { $0.id == assessment.id }) {
+            fitnessAssessments[index] = assessment
+        } else {
+            fitnessAssessments.append(assessment)
+        }
+    }
+
+    private func upsertPersonalizedProgram(_ program: PersonalizedProgram) {
+        if let index = personalizedPrograms.firstIndex(where: { $0.baseProgramID == program.baseProgramID }) {
+            personalizedPrograms[index] = program
+        } else {
+            personalizedPrograms.append(program)
+        }
+    }
+
+    private func normalizedRetestAssessment(
+        _ assessment: FitnessAssessment,
+        phase: AssessmentPhase,
+        date: Date,
+        profile: UserProfile
+    ) -> FitnessAssessment {
+        var normalized = FitnessAssessment(
+            dateKey: dateKey(for: date),
+            phase: phase,
+            pushUpReps: assessment.pushUpReps,
+            pushUpVariation: assessment.pushUpVariation,
+            stepTestDurationSeconds: assessment.stepTestDurationSeconds,
+            stepCount: assessment.stepCount,
+            recoveryHeartRate: assessment.recoveryHeartRate,
+            stepTestDifficulty: assessment.stepTestDifficulty,
+            oneMileTimeSeconds: assessment.oneMileTimeSeconds,
+            oneMileStyle: assessment.oneMileStyle,
+            oneMileDifficulty: assessment.oneMileDifficulty,
+            computedLevel: assessment.computedLevel
+        )
+        normalized.computedLevel = PersonalizationCalculator.level(for: profile, assessment: normalized)
+        return normalized
+    }
+
+    private func retestAdjustedProgram(
+        _ program: TrainingProgram,
+        phase: AssessmentPhase,
+        level: TrainingLevel
+    ) -> TrainingProgram {
+        let adjustmentLabel: String
+        switch phase {
+        case .baseline:
+            adjustmentLabel = "Baseline assessment"
+        case .week6:
+            adjustmentLabel = "Weeks 7-12 adjusted after Week 6 retest"
+        case .week12:
+            adjustmentLabel = "Week 12 final assessment recorded"
+        }
+
+        return TrainingProgram(
+            id: program.id,
+            name: program.name,
+            goal: program.goal,
+            summary: "\(program.summary) \(phase.title) retest assigned \(level.title) training for the next block.",
+            weeklyStructure: [adjustmentLabel] + program.weeklyStructure.filter { $0 != adjustmentLabel },
+            prepSteps: program.prepSteps,
+            nutritionTargets: program.nutritionTargets,
+            quickProteinAnchors: program.quickProteinAnchors,
+            weeklySchedule: program.weeklySchedule,
+            mealTemplates: program.mealTemplates
+        )
     }
 
     private func ensureProgressIndex(for exerciseID: String) -> Int {
@@ -310,6 +467,13 @@ final class LocalAppState {
 
     private func dateKey(for date: Date) -> String {
         Self.dateKeyFormatter.string(from: date)
+    }
+
+    private func parsedDate(from dateKey: String?) -> Date? {
+        guard let dateKey else {
+            return nil
+        }
+        return Self.dateKeyFormatter.date(from: dateKey)
     }
 
     @ObservationIgnored private static let dateKeyFormatter: DateFormatter = {

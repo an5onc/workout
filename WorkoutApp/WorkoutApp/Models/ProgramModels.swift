@@ -59,6 +59,16 @@ struct ExerciseSubstitution: Identifiable, Hashable, Codable {
     let demoURL: URL?
 }
 
+enum ExerciseTag: String, Hashable, Codable {
+    case pushStrength
+    case lowerStrength
+    case conditioning
+    case treadmill
+    case lowImpact
+    case beginnerFriendly
+    case unilateral
+}
+
 struct Exercise: Identifiable, Hashable, Codable {
     let id: String
     let name: String
@@ -71,6 +81,7 @@ struct Exercise: Identifiable, Hashable, Codable {
     let feel: String
     let demoURL: URL?
     var substitutions: [ExerciseSubstitution] = []
+    var tags: Set<ExerciseTag> = []
 }
 
 struct WorkoutDay: Identifiable, Hashable, Codable {

@@ -45,12 +45,43 @@ struct ProgressDashboardView: View {
             List {
                 adherenceSection
                 weightLossMetricsSection
+                assessmentProgressSection
                 performanceSection
                 exerciseHistorySection
                 weeklyCheckInSection
                 compositionHistorySection
             }
             .navigationTitle("Progress")
+        }
+    }
+
+    private var assessmentProgressSection: some View {
+        Section("Assessment progress") {
+            let assessments = state.fitnessAssessments.sorted { $0.dateKey > $1.dateKey }
+            if assessments.isEmpty {
+                Text("Personalize a plan and complete the baseline assessment to see progress here.")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(assessments) { assessment in
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text("\(assessment.phase.title) | \(assessment.dateKey)")
+                                .font(.headline)
+                            Spacer()
+                            Text(assessment.computedLevel.title)
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(AppTheme.accent)
+                        }
+                        metricRow("Push-ups", value: "\(assessment.pushUpReps) \(assessment.pushUpVariation.title.lowercased())")
+                        metricRow("Step test", value: "\(assessment.stepCount) steps")
+                        if let recoveryHeartRate = assessment.recoveryHeartRate {
+                            metricRow("Recovery HR", value: "\(recoveryHeartRate) bpm")
+                        }
+                        metricRow("1-mile treadmill", value: mileTimeText(assessment.oneMileTimeSeconds))
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
         }
     }
 
@@ -332,6 +363,12 @@ struct ProgressDashboardView: View {
         }
         let prefix = value > 0 ? "+" : ""
         return "\(prefix)\(formatWeight(value)) \(unit)"
+    }
+
+    private func mileTimeText(_ seconds: Int) -> String {
+        let minutes = seconds / 60
+        let remainder = seconds % 60
+        return String(format: "%d:%02d", minutes, remainder)
     }
 
     private static let dateKeyFormatter: DateFormatter = {
