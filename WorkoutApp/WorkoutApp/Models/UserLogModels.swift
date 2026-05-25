@@ -93,15 +93,37 @@ struct WorkoutSummary: Hashable {
 }
 
 struct FoodLog: Identifiable, Hashable, Codable {
-    var id: String { dateKey }
+    var id: String { "\(programID)|\(dateKey)" }
     let dateKey: String
+    var programID: String
     var checkedMealIDs: Set<String>
     var quickProteinAdds: [Int]
 
-    init(dateKey: String, checkedMealIDs: Set<String> = [], quickProteinAdds: [Int] = []) {
+    init(
+        dateKey: String,
+        programID: String = ProgramSeed.defaultProgramID,
+        checkedMealIDs: Set<String> = [],
+        quickProteinAdds: [Int] = []
+    ) {
         self.dateKey = dateKey
+        self.programID = programID
         self.checkedMealIDs = checkedMealIDs
         self.quickProteinAdds = quickProteinAdds
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case dateKey
+        case programID
+        case checkedMealIDs
+        case quickProteinAdds
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.dateKey = try container.decode(String.self, forKey: .dateKey)
+        self.programID = try container.decodeIfPresent(String.self, forKey: .programID) ?? ProgramSeed.defaultProgramID
+        self.checkedMealIDs = try container.decodeIfPresent(Set<String>.self, forKey: .checkedMealIDs) ?? []
+        self.quickProteinAdds = try container.decodeIfPresent([Int].self, forKey: .quickProteinAdds) ?? []
     }
 }
 

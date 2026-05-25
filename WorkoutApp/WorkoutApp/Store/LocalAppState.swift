@@ -184,7 +184,7 @@ final class LocalAppState {
 
     func foodLog(for date: Date) -> FoodLog {
         let key = dateKey(for: date)
-        return foodLogs.first { $0.dateKey == key } ?? FoodLog(dateKey: key)
+        return foodLogs.first { $0.dateKey == key && $0.programID == selectedProgramID } ?? FoodLog(dateKey: key, programID: selectedProgramID)
     }
 
     func selectedFoodMeals(from templates: [MealTemplate], date: Date) -> [MealTemplate] {
@@ -257,7 +257,7 @@ final class LocalAppState {
     }
 
     private func upsertFoodLog(_ log: FoodLog) {
-        if let index = foodLogs.firstIndex(where: { $0.dateKey == log.dateKey }) {
+        if let index = foodLogs.firstIndex(where: { $0.dateKey == log.dateKey && $0.programID == log.programID }) {
             foodLogs[index] = log
         } else {
             foodLogs.append(log)

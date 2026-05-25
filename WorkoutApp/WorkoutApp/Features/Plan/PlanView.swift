@@ -4,9 +4,14 @@ struct PlanView: View {
     let state: LocalAppState
     @State private var exerciseSearchText = ""
     @State private var pendingProgramSelection: TrainingProgram?
+    @State private var previewProgramID = ProgramSeed.defaultProgramID
 
     private var selectedProgram: TrainingProgram {
         state.selectedProgram
+    }
+
+    private var selectedProgramPreview: TrainingProgram {
+        ProgramSeed.program(id: previewProgramID) ?? selectedProgram
     }
 
     private var filteredExercises: [Exercise] {
@@ -42,6 +47,7 @@ struct PlanView: View {
     var body: some View {
         NavigationStack {
             List {
+                programGoalOverviewSection
                 programSelectionSection
                 structureSection
                 weeklyScheduleSection
@@ -100,6 +106,77 @@ struct PlanView: View {
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
+    }
+
+    private var programGoalOverviewSection: some View {
+        Section("Choose your goal") {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(ProgramSeed.programs) { program in
+                        goalCard(program)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Plan preview")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AppTheme.accent)
+                Text(selectedProgramPreview.name)
+                    .font(.headline)
+                Text(selectedProgramPreview.summary)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                HStack {
+                    metricPill("\(selectedProgramPreview.nutritionTargets.calories)", "cal")
+                    metricPill("\(selectedProgramPreview.nutritionTargets.proteinGrams)g", "protein")
+                    metricPill("\(activeTrainingDays(in: selectedProgramPreview))", "training days")
+                }
+            }
+            .padding(.vertical, 4)
+        }
+        .onAppear {
+            previewProgramID = state.selectedProgram.id
+        }
+        .onChange(of: state.selectedProgram.id) { _, newProgramID in
+            previewProgramID = newProgramID
+        }
+    }
+
+    private func goalCard(_ program: TrainingProgram) -> some View {
+        let isPreviewed = program.id == selectedProgramPreview.id
+        let isCurrent = program.id == state.selectedProgram.id
+
+        return Button {
+            previewProgramID = program.id
+        } label: {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text(program.goal)
+                        .font(.caption.weight(.semibold))
+                    Spacer()
+                    Image(systemName: isCurrent ? "checkmark.circle.fill" : "circle")
+                        .foregroundStyle(isCurrent ? AppTheme.accent : .secondary)
+                }
+                Text(program.name)
+                    .font(.subheadline.weight(.bold))
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(2)
+                Text(program.weeklyStructure.first ?? "")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            .frame(width: 180, alignment: .topLeading)
+            .frame(minHeight: 104, alignment: .topLeading)
+            .padding(12)
+            .background(isPreviewed ? AppTheme.accentSoft : AppTheme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(program.goal), \(program.name)")
+        .accessibilityValue(isPreviewed ? "Previewed" : "Not previewed")
     }
 
     private func programOptionRow(_ program: TrainingProgram) -> some View {
@@ -270,6 +347,21 @@ struct PlanView: View {
                 .foregroundStyle(.secondary)
         }
         .padding(.vertical, 3)
+    }
+
+    private func metricPill(_ value: String, _ label: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(value)
+                .font(.subheadline.weight(.bold))
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func activeTrainingDays(in program: TrainingProgram) -> Int {
+        program.weeklySchedule.filter { !$0.isRestDay }.count
     }
 
     private func weekdayTitle(_ weekday: Weekday) -> String {

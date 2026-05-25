@@ -239,6 +239,28 @@ final class LocalAppStateTests: XCTestCase {
         XCTAssertEqual(state.foodLog(for: today).quickProteinAdds, [])
     }
 
+    func testFoodLogsAreScopedBySelectedProgram() {
+        let state = LocalAppState(defaults: defaults)
+        let date = date(year: 2026, month: 5, day: 11)
+
+        state.toggleFoodMeal("protein-oatmeal", on: true, date: date)
+        state.addQuickProtein(25, date: date)
+        state.selectProgram(id: "weight-loss-foundation")
+        state.toggleFoodMeal("egg-white-breakfast-wrap", on: true, date: date)
+        state.addQuickProtein(20, date: date)
+
+        XCTAssertEqual(state.foodLogs.count, 2)
+        XCTAssertEqual(state.foodLog(for: date).programID, "weight-loss-foundation")
+        XCTAssertEqual(state.foodLog(for: date).checkedMealIDs, ["egg-white-breakfast-wrap"])
+        XCTAssertEqual(state.foodLog(for: date).quickProteinAdds, [20])
+
+        state.selectProgram(id: ProgramSeed.defaultProgramID)
+
+        XCTAssertEqual(state.foodLog(for: date).programID, ProgramSeed.defaultProgramID)
+        XCTAssertEqual(state.foodLog(for: date).checkedMealIDs, ["protein-oatmeal"])
+        XCTAssertEqual(state.foodLog(for: date).quickProteinAdds, [25])
+    }
+
     func testFoodLogsPersistByDateWithoutBreakingGroceryState() {
         let state = LocalAppState(defaults: defaults)
         let today = date(year: 2026, month: 5, day: 11)

@@ -98,6 +98,31 @@ final class WorkoutAppScaffoldTests: XCTestCase {
         XCTAssertTrue(planView.contains("state.selectProgram(id: program.id)"))
     }
 
+    func testPlanChooserShowsGoalCardsAndPreview() throws {
+        let planView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Plan/PlanView.swift"), encoding: .utf8)
+        let todayView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Today/TodayView.swift"), encoding: .utf8)
+
+        XCTAssertTrue(planView.contains("programGoalOverviewSection"))
+        XCTAssertTrue(planView.contains("previewProgramID"))
+        XCTAssertTrue(planView.contains("selectedProgramPreview"))
+        XCTAssertTrue(planView.contains("goalCard("))
+        XCTAssertTrue(planView.contains("Plan preview"))
+        XCTAssertTrue(todayView.contains("currentGoalStatus"))
+        XCTAssertTrue(todayView.contains("Goal"))
+    }
+
+    func testProgressDashboardShowsWeightLossMetrics() throws {
+        let rootTabView = try String(contentsOfFile: sourcePath("WorkoutApp/App/RootTabView.swift"), encoding: .utf8)
+
+        XCTAssertTrue(rootTabView.contains("weightLossMetricsSection"))
+        XCTAssertTrue(rootTabView.contains("Weight-loss metrics"))
+        XCTAssertTrue(rootTabView.contains("Body weight trend"))
+        XCTAssertTrue(rootTabView.contains("Waist trend"))
+        XCTAssertTrue(rootTabView.contains("Weekly adherence"))
+        XCTAssertTrue(rootTabView.contains("Walking/cardio"))
+        XCTAssertTrue(rootTabView.contains("ProgressMetricsCalculator"))
+    }
+
     private func sourcePath(_ path: String) -> String {
         URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

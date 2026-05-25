@@ -2,10 +2,13 @@
 
 ## Latest Session
 
-- **2026-05-24 (Session 03)** -> [2026-05-24__session-03.md](2026-05-24__session-03.md)
-  - Continued the selectable-program feature with program-scoped workout logs, a plan-switch confirmation dialog, weight-loss plan substitutions/meals, selector UI polish, simulator verification, and bundle-size measurement.
+- **2026-05-24 (Session 04)** -> [2026-05-24__session-04.md](2026-05-24__session-04.md)
+  - Committed the completed selector refinement pass, scoped Food history by program, added goal-card plan previews, and added weight-loss Progress metrics.
 
 ## Previous Sessions
+
+- **2026-05-24 (Session 03)** -> [2026-05-24__session-03.md](2026-05-24__session-03.md)
+  - Continued the selectable-program feature with program-scoped workout logs, a plan-switch confirmation dialog, weight-loss plan substitutions/meals, selector UI polish, simulator verification, and bundle-size measurement.
 
 - **2026-05-24 (Session 02)** -> [2026-05-24__session-02.md](2026-05-24__session-02.md)
   - Added selectable in-app training programs, introduced a Weight Loss Foundation plan, and wired Today/Food/Grocery/Plan to the selected program.

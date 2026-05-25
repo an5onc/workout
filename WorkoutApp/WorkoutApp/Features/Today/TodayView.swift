@@ -29,6 +29,7 @@ struct TodayView: View {
                     let workout = planner.workout(for: currentWeekday(), override: state.selectedDayOverride) ?? selectedProgram.weeklySchedule[1]
                     brandBanner
                     currentPlanLabel
+                    currentGoalStatus
                     prepAheadSection
                     header(for: workout)
 
@@ -84,6 +85,27 @@ struct TodayView: View {
                     .foregroundStyle(.secondary)
                 Text(state.selectedProgram.name)
                     .font(.subheadline.weight(.semibold))
+            }
+            Spacer()
+        }
+        .padding()
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var currentGoalStatus: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "chart.line.uptrend.xyaxis")
+                .foregroundStyle(AppTheme.accent)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Goal")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Text(state.selectedProgram.goal)
+                    .font(.subheadline.weight(.semibold))
+                Text("\(activeTrainingDays(in: selectedProgram)) training days | \(selectedProgram.nutritionTargets.proteinGrams)g protein target")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
             Spacer()
         }
@@ -254,6 +276,10 @@ struct TodayView: View {
     private func currentWeekday() -> Weekday {
         let weekday = Calendar.current.component(.weekday, from: currentDate())
         return Weekday.allCases[weekday - 1]
+    }
+
+    private func activeTrainingDays(in program: TrainingProgram) -> Int {
+        program.weeklySchedule.filter { !$0.isRestDay }.count
     }
 
     private func formatVolume(_ volume: Double) -> String {

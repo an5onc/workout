@@ -44,12 +44,32 @@ struct ProgressDashboardView: View {
         NavigationStack {
             List {
                 adherenceSection
+                weightLossMetricsSection
                 performanceSection
                 exerciseHistorySection
                 weeklyCheckInSection
                 compositionHistorySection
             }
             .navigationTitle("Progress")
+        }
+    }
+
+    @ViewBuilder
+    private var weightLossMetricsSection: some View {
+        if state.selectedProgram.goal.localizedCaseInsensitiveContains("weight loss") {
+            Section("Weight-loss metrics") {
+                let bodyWeightChange = ProgressMetricsCalculator.change(in: state.weeklyCheckIns, value: \.bodyWeightText)
+                let waistChange = ProgressMetricsCalculator.change(in: state.weeklyCheckIns, value: \.waistText)
+                let adherence = ProgressMetricsCalculator.weeklyAdherence(
+                    program: state.selectedProgram,
+                    workoutLogs: state.workoutLogs
+                )
+
+                metricRow("Body weight trend", value: trendText(bodyWeightChange, unit: "lb"))
+                metricRow("Waist trend", value: trendText(waistChange, unit: "in"))
+                metricRow("Weekly adherence", value: "\(adherence.completedTrainingDays)/\(adherence.plannedTrainingDays) days")
+                metricRow("Walking/cardio", value: "\(adherence.completedCardioDays)/\(adherence.plannedCardioDays) days")
+            }
         }
     }
 
@@ -281,6 +301,16 @@ struct ProgressDashboardView: View {
         return "\(summary.completedSets)/\(summary.totalSets) sets | \(formatWeight(summary.totalVolume)) lb volume"
     }
 
+    private func metricRow(_ title: String, value: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+            Spacer()
+            Text(value)
+                .foregroundStyle(AppTheme.accent)
+        }
+    }
+
     private func exerciseName(for exerciseID: String) -> String {
         state.selectedProgram.weeklySchedule
             .flatMap(\.exercises)
@@ -294,6 +324,14 @@ struct ProgressDashboardView: View {
 
     private func display(_ value: String) -> String {
         value.isEmpty ? "--" : value
+    }
+
+    private func trendText(_ value: Double?, unit: String) -> String {
+        guard let value else {
+            return "--"
+        }
+        let prefix = value > 0 ? "+" : ""
+        return "\(prefix)\(formatWeight(value)) \(unit)"
     }
 
     private static let dateKeyFormatter: DateFormatter = {
