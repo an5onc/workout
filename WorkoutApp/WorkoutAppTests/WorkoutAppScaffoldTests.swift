@@ -123,6 +123,36 @@ final class WorkoutAppScaffoldTests: XCTestCase {
         XCTAssertTrue(rootTabView.contains("ProgressMetricsCalculator"))
     }
 
+    func testPlanPersonalizationFlowExistsAndIsWired() throws {
+        let planView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Plan/PlanView.swift"), encoding: .utf8)
+        let flowPath = sourcePath("WorkoutApp/Features/Plan/PersonalizationFlowView.swift")
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: flowPath))
+        let flowView = try String(contentsOfFile: flowPath, encoding: .utf8)
+
+        XCTAssertTrue(planView.contains("Personalize plan"))
+        XCTAssertTrue(planView.contains("PersonalizationFlowView"))
+        XCTAssertTrue(flowView.contains("Baseline assessment"))
+        XCTAssertTrue(flowView.contains("Push-up test"))
+        XCTAssertTrue(flowView.contains("Step test"))
+        XCTAssertTrue(flowView.contains("1-mile treadmill"))
+        XCTAssertTrue(flowView.contains("finalizePersonalizedProgram"))
+    }
+
+    func testTodayAndProgressExposeAssessmentStatus() throws {
+        let todayView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Today/TodayView.swift"), encoding: .utf8)
+        let rootTabView = try String(contentsOfFile: sourcePath("WorkoutApp/App/RootTabView.swift"), encoding: .utf8)
+
+        XCTAssertTrue(todayView.contains("retestPromptSection"))
+        XCTAssertTrue(todayView.contains("Retest due"))
+        XCTAssertTrue(todayView.contains("Training level"))
+        XCTAssertTrue(rootTabView.contains("assessmentProgressSection"))
+        XCTAssertTrue(rootTabView.contains("Assessment progress"))
+        XCTAssertTrue(rootTabView.contains("Push-ups"))
+        XCTAssertTrue(rootTabView.contains("Step test"))
+        XCTAssertTrue(rootTabView.contains("1-mile treadmill"))
+    }
+
     private func sourcePath(_ path: String) -> String {
         URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

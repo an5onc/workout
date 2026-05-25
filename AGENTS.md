@@ -132,13 +132,13 @@ At the end of every substantive session:
 <claude-mem-context>
 # Memory Context
 
-# [workout] recent context, 2026-05-24 11:08pm MDT
+# [workout] recent context, 2026-05-24 11:41pm MDT
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 6 obs (2,249t read) | 234,519t work | 99% savings
+Stats: 7 obs (2,757t read) | 257,066t work | 99% savings
 
 ### May 24, 2026
 297 9:32p 🔵 Workout project lacks session documentation and has pending Xcode changes
@@ -147,6 +147,7 @@ Stats: 6 obs (2,249t read) | 234,519t work | 99% savings
 301 " ✅ Session documentation and planning committed to repository
 302 10:49p ✅ Repository cleaned and optimized for handoff
 303 10:52p ✅ Xcode project configuration upgraded and consolidated
+304 11:19p ✅ Merged gym-performance-v2 feature branch into main with all tests passing
 
-Access 235k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 257k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

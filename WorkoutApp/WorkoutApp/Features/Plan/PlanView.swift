@@ -4,6 +4,7 @@ struct PlanView: View {
     let state: LocalAppState
     @State private var exerciseSearchText = ""
     @State private var pendingProgramSelection: TrainingProgram?
+    @State private var personalizationProgram: TrainingProgram?
     @State private var previewProgramID = ProgramSeed.defaultProgramID
 
     private var selectedProgram: TrainingProgram {
@@ -81,6 +82,9 @@ struct PlanView: View {
             } message: {
                 Text("Switching plans resets Grocery picks so old meal selections do not carry into the new plan.")
             }
+            .sheet(item: $personalizationProgram) { program in
+                PersonalizationFlowView(state: state, program: program)
+            }
         }
     }
 
@@ -133,6 +137,12 @@ struct PlanView: View {
                     metricPill("\(selectedProgramPreview.nutritionTargets.proteinGrams)g", "protein")
                     metricPill("\(activeTrainingDays(in: selectedProgramPreview))", "training days")
                 }
+
+                Button("Personalize plan") {
+                    personalizationProgram = selectedProgramPreview
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(AppTheme.accent)
             }
             .padding(.vertical, 4)
         }

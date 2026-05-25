@@ -155,3 +155,102 @@ struct WeeklyCheckIn: Identifiable, Hashable, Codable {
         self.notes = notes
     }
 }
+
+enum TrainingLevel: String, CaseIterable, Identifiable, Codable {
+    case beginner
+    case moderate
+    case advanced
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .beginner: "Beginner"
+        case .moderate: "Moderate"
+        case .advanced: "Advanced"
+        }
+    }
+}
+
+enum AssessmentPhase: String, CaseIterable, Identifiable, Codable {
+    case baseline
+    case week6
+    case week12
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .baseline: "Baseline"
+        case .week6: "Week 6"
+        case .week12: "Week 12"
+        }
+    }
+}
+
+enum PushUpVariation: String, CaseIterable, Identifiable, Codable {
+    case standard
+    case knee
+    case incline
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .standard: "Standard"
+        case .knee: "Knee"
+        case .incline: "Incline"
+        }
+    }
+}
+
+enum MileTestStyle: String, CaseIterable, Identifiable, Codable {
+    case walk
+    case run
+    case walkRun
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .walk: "Walk"
+        case .run: "Run"
+        case .walkRun: "Walk/run"
+        }
+    }
+}
+
+struct UserProfile: Hashable, Codable {
+    var age: Int
+    var heightInches: Int
+    var weightPounds: Int
+    var experienceLevel: String
+    var availableWorkoutDaysPerWeek: Int
+    var limitations: String
+}
+
+struct FitnessAssessment: Identifiable, Hashable, Codable {
+    var id: String { "\(phase.rawValue)|\(dateKey)" }
+    let dateKey: String
+    let phase: AssessmentPhase
+    var pushUpReps: Int
+    var pushUpVariation: PushUpVariation
+    var stepTestDurationSeconds: Int
+    var stepCount: Int
+    var recoveryHeartRate: Int?
+    var stepTestDifficulty: Int
+    var oneMileTimeSeconds: Int
+    var oneMileStyle: MileTestStyle
+    var oneMileDifficulty: Int
+    var computedLevel: TrainingLevel
+}
+
+struct PersonalizedProgram: Identifiable, Hashable, Codable {
+    var id: String { baseProgramID }
+    let baseProgramID: String
+    var assignedLevel: TrainingLevel
+    var generatedProgram: TrainingProgram
+    var baselineAssessmentID: String
+    var latestAssessmentID: String
+    var startDateKey: String
+}

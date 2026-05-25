@@ -193,6 +193,105 @@ final class LocalAppStateTests: XCTestCase {
         XCTAssertEqual(checkIn.notes, "Good week")
     }
 
+    func testPersonalizationProfileAssessmentAndProgramPersist() {
+        let state = LocalAppState(defaults: defaults)
+        let base = ProgramSeed.defaultProgram
+        let generated = TrainingProgram(
+            id: base.id,
+            name: "\(base.name) - Beginner",
+            goal: base.goal,
+            summary: "Personalized beginner version.",
+            weeklyStructure: base.weeklyStructure,
+            prepSteps: base.prepSteps,
+            nutritionTargets: NutritionTargets(calories: 1500, proteinGrams: 120, fatGrams: 45, carbsGrams: 130, waterOunces: 100),
+            quickProteinAnchors: base.quickProteinAnchors,
+            weeklySchedule: base.weeklySchedule,
+            mealTemplates: base.mealTemplates
+        )
+        let profile = UserProfile(
+            age: 34,
+            heightInches: 66,
+            weightPounds: 180,
+            experienceLevel: "New to training",
+            availableWorkoutDaysPerWeek: 4,
+            limitations: "Knee soreness"
+        )
+        let assessment = FitnessAssessment(
+            dateKey: "2026-05-11",
+            phase: .baseline,
+            pushUpReps: 8,
+            pushUpVariation: .standard,
+            stepTestDurationSeconds: 180,
+            stepCount: 70,
+            recoveryHeartRate: 122,
+            stepTestDifficulty: 7,
+            oneMileTimeSeconds: 960,
+            oneMileStyle: .walkRun,
+            oneMileDifficulty: 8,
+            computedLevel: .beginner
+        )
+        let personalized = PersonalizedProgram(
+            baseProgramID: base.id,
+            assignedLevel: .beginner,
+            generatedProgram: generated,
+            baselineAssessmentID: assessment.id,
+            latestAssessmentID: assessment.id,
+            startDateKey: "2026-05-11"
+        )
+
+        state.userProfile = profile
+        state.fitnessAssessments = [assessment]
+        state.personalizedPrograms = [personalized]
+        state.selectedProgramID = base.id
+
+        let restored = LocalAppState(defaults: defaults)
+
+        XCTAssertEqual(restored.userProfile, profile)
+        XCTAssertEqual(restored.fitnessAssessments, [assessment])
+        XCTAssertEqual(restored.personalizedPrograms, [personalized])
+        XCTAssertEqual(restored.selectedProgram.name, "Lower Body Strength + Recomp - Beginner")
+    }
+
+    func testFinalizePersonalizedProgramStoresProfileAssessmentAndGeneratedProgram() {
+        let state = LocalAppState(defaults: defaults)
+        let profile = UserProfile(
+            age: 34,
+            heightInches: 66,
+            weightPounds: 180,
+            experienceLevel: "Some training",
+            availableWorkoutDaysPerWeek: 4,
+            limitations: ""
+        )
+        let assessment = FitnessAssessment(
+            dateKey: "2026-05-11",
+            phase: .baseline,
+            pushUpReps: 20,
+            pushUpVariation: .standard,
+            stepTestDurationSeconds: 180,
+            stepCount: 85,
+            recoveryHeartRate: nil,
+            stepTestDifficulty: 6,
+            oneMileTimeSeconds: 760,
+            oneMileStyle: .walkRun,
+            oneMileDifficulty: 7,
+            computedLevel: .beginner
+        )
+
+        state.finalizePersonalizedProgram(
+            baseProgramID: "weight-loss-foundation",
+            profile: profile,
+            assessment: assessment,
+            startDate: date(year: 2026, month: 5, day: 11)
+        )
+
+        XCTAssertEqual(state.selectedProgramID, "weight-loss-foundation")
+        XCTAssertEqual(state.userProfile, profile)
+        XCTAssertEqual(state.fitnessAssessments.count, 1)
+        XCTAssertEqual(state.fitnessAssessments.first?.computedLevel, .moderate)
+        XCTAssertEqual(state.personalizedPrograms.first?.assignedLevel, .moderate)
+        XCTAssertEqual(state.selectedProgram.name, "Weight Loss Foundation - Moderate")
+    }
+
     func testSelectedMealsFiltersBySelectedMealIDs() {
         let state = LocalAppState(defaults: defaults)
         state.selectedMealIDs = ["meal-2"]

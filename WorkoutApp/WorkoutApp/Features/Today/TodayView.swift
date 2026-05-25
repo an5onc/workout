@@ -30,6 +30,7 @@ struct TodayView: View {
                     brandBanner
                     currentPlanLabel
                     currentGoalStatus
+                    retestPromptSection
                     prepAheadSection
                     header(for: workout)
 
@@ -106,12 +107,46 @@ struct TodayView: View {
                 Text("\(activeTrainingDays(in: selectedProgram)) training days | \(selectedProgram.nutritionTargets.proteinGrams)g protein target")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                if let personalizedProgram = currentPersonalizedProgram {
+                    Text("Training level: \(personalizedProgram.assignedLevel.title)")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(AppTheme.accent)
+                }
             }
             Spacer()
         }
         .padding()
         .background(AppTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    @ViewBuilder
+    private var retestPromptSection: some View {
+        if let personalizedProgram = currentPersonalizedProgram,
+           let phase = PersonalizationCalculator.nextRetestPhase(
+            program: personalizedProgram,
+            assessments: state.fitnessAssessments,
+            on: currentDate()
+           ) {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "stopwatch.fill")
+                    .foregroundStyle(AppTheme.accent)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Retest due")
+                        .font(.headline)
+                    Text("\(phase.title) assessment is ready: push-ups, 3-minute step test, and 1-mile treadmill at 0.0 incline.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Text("Open Plan to record the retest and adjust the next block.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+            .padding()
+            .background(AppTheme.accentSoft)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
     }
 
     private var prepAheadSection: some View {
@@ -280,6 +315,10 @@ struct TodayView: View {
 
     private func activeTrainingDays(in program: TrainingProgram) -> Int {
         program.weeklySchedule.filter { !$0.isRestDay }.count
+    }
+
+    private var currentPersonalizedProgram: PersonalizedProgram? {
+        state.personalizedPrograms.first { $0.baseProgramID == state.selectedProgramID }
     }
 
     private func formatVolume(_ volume: Double) -> String {
