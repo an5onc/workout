@@ -46,12 +46,31 @@ struct PlanView: View {
         GroceryListGenerator.generate(from: selectedProgram.mealTemplates)
     }
 
+    private var unitsSection: some View {
+        Section {
+            Picker("Weight unit", selection: Binding(
+                get: { state.weightUnit },
+                set: { state.weightUnit = $0 }
+            )) {
+                ForEach(WeightUnit.allCases) { unit in
+                    Text(unit.symbol).tag(unit)
+                }
+            }
+            .pickerStyle(.segmented)
+        } header: {
+            Text("Units")
+        } footer: {
+            Text("Past sets keep the unit they were logged in and are converted for display.")
+        }
+    }
+
     var body: some View {
         NavigationStack {
             List {
                 programGoalOverviewSection
                 adaptiveExplanationSection
                 programSelectionSection
+                unitsSection
                 structureSection
                 weeklyScheduleSection
                 exerciseLibrarySection

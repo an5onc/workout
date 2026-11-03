@@ -24,7 +24,6 @@ final class LocalAppStateTests: XCTestCase {
     func testRoundTripRestoreOfAllPersistedFields() {
         let state = LocalAppState(defaults: defaults)
         state.selectedProgramID = "weight-loss-foundation"
-        state.selectedDayOverride = .friday
         state.setProgress = [
             SetProgress(exerciseID: "hip-thrust", completedSets: [0, 2], weightText: "135", repsText: "10", rpeText: "8")
         ]
@@ -36,7 +35,6 @@ final class LocalAppStateTests: XCTestCase {
 
         let restored = LocalAppState(defaults: defaults)
 
-        XCTAssertEqual(restored.selectedDayOverride, .friday)
         XCTAssertEqual(restored.selectedProgramID, "weight-loss-foundation")
         XCTAssertEqual(restored.selectedProgram.id, "weight-loss-foundation")
         XCTAssertEqual(restored.setProgress, state.setProgress)
@@ -174,6 +172,185 @@ final class LocalAppStateTests: XCTestCase {
         state.updateSetEntry(exerciseID: "hip-thrust", setIndex: 0, weightText: "140", repsText: "8", date: today)
 
         XCTAssertEqual(state.lastPerformanceSummary(exerciseID: "hip-thrust", before: today), "135 lb x 10, 9")
+    }
+
+    func testNewDayStartsWithEmptySetsAndLeavesPreviousLogIntact() {
+        let state = LocalAppState(defaults: defaults)
+        let lastMonday = date(year: 2026, month: 5, day: 11)
+        let nextMonday = date(year: 2026, month: 5, day: 18)
+
+        state.updateSetEntry(exerciseID: "barbell-hip-thrust", setIndex: 0, weightText: "135", repsText: "10", date: lastMonday)
+        state.toggleSet(exerciseID: "barbell-hip-thrust", setIndex: 0, date: lastMonday)
+
+        let restored = LocalAppState(defaults: defaults)
+        restored.prepareDay(nextMonday)
+
+        XCTAssertEqual(restored.progress(for: "barbell-hip-thrust").completedSets, [])
+        XCTAssertEqual(restored.setEntry(exerciseID: "barbell-hip-thrust", setIndex: 0).weightText, "")
+        XCTAssertEqual(restored.workoutLog(for: lastMonday).setProgress.first?.setEntries.first?.weightText, "135")
+    }
+
+    func testFirstTapOnNewDayDoesNotCopyPreviousDaySets() {
+        let state = LocalAppState(defaults: defaults)
+        let lastMonday = date(year: 2026, month: 5, day: 11)
+        let nextMonday = date(year: 2026, month: 5, day: 18)
+
+        state.updateSetEntry(exerciseID: "barbell-hip-thrust", setIndex: 0, weightText: "135", repsText: "10", date: lastMonday)
+        state.toggleSet(exerciseID: "barbell-hip-thrust", setIndex: 0, date: lastMonday)
+        state.toggleSet(exerciseID: "barbell-hip-thrust", setIndex: 1, date: lastMonday)
+
+        state.updateSetEntry(exerciseID: "romanian-deadlift", setIndex: 0, weightText: "95", repsText: "8", date: nextMonday)
+
+        let todayLog = state.workoutLog(for: nextMonday)
+        XCTAssertEqual(todayLog.setProgress.map(\.exerciseID), ["romanian-deadlift"])
+        XCTAssertEqual(state.workoutLog(for: lastMonday).setProgress.first?.completedSets, [0, 1])
+    }
+
+    func testSameDayRelaunchKeepsTodaysSets() {
+        let state = LocalAppState(defaults: defaults)
+        let monday = date(year: 2026, month: 5, day: 11)
+        state.toggleSet(exerciseID: "barbell-hip-thrust", setIndex: 0, date: monday)
+
+        let restored = LocalAppState(defaults: defaults)
+        restored.prepareDay(monday)
+
+        XCTAssertEqual(restored.progress(for: "barbell-hip-thrust").completedSets, [0])
+    }
+
+    func testDayOverrideAppliesOnlyToItsDate() {
+        let state = LocalAppState(defaults: defaults)
+        let tuesday = date(year: 2026, month: 5, day: 12)
+        let wednesday = date(year: 2026, month: 5, day: 13)
+
+        state.setWorkoutDayOverride(.monday, date: tuesday)
+
+        let restored = LocalAppState(defaults: defaults)
+        XCTAssertEqual(restored.workoutDayOverride(on: tuesday), .monday)
+        XCTAssertEqual(restored.scheduledWorkout(on: tuesday)?.id, .monday)
+        XCTAssertNil(restored.workoutDayOverride(on: wednesday))
+        XCTAssertEqual(restored.scheduledWorkout(on: wednesday)?.id, .wednesday)
+
+        restored.setWorkoutDayOverride(nil, date: tuesday)
+        XCTAssertEqual(restored.scheduledWorkout(on: tuesday)?.id, .tuesday)
+    }
+
+    func testChoosingTheNormalDayClearsOverride() {
+        let state = LocalAppState(defaults: defaults)
+        let tuesday = date(year: 2026, month: 5, day: 12)
+
+        state.setWorkoutDayOverride(.tuesday, date: tuesday)
+
+        XCTAssertNil(state.workoutDayOverride(on: tuesday))
+    }
+
+    func testLegacySnapshotWithOldDayOverrideStillLoads() throws {
+        let legacy: [String: Any] = [
+            "selectedProgramID": ProgramSeed.defaultProgramID,
+            "selectedDayOverride": "friday",
+            "setProgress": [],
+            "selectedMealIDs": ["meal-1"],
+            "checkedGroceryItemIDs": []
+        ]
+        defaults.set(try JSONSerialization.data(withJSONObject: legacy), forKey: storageKey)
+
+        let state = LocalAppState(defaults: defaults)
+
+        XCTAssertEqual(state.selectedMealIDs, ["meal-1"])
+        XCTAssertNil(state.workoutDayOverride(on: date(year: 2026, month: 5, day: 12)))
+        XCTAssertEqual(state.weightUnit, .lb)
+    }
+
+    func testWeightUnitPersistsAndStampsNewEntries() {
+        let state = LocalAppState(defaults: defaults)
+        let monday = date(year: 2026, month: 5, day: 11)
+
+        state.weightUnit = .kg
+        state.updateSetEntry(exerciseID: "barbell-hip-thrust", setIndex: 0, weightText: "60", repsText: "10", date: monday)
+
+        let restored = LocalAppState(defaults: defaults)
+        XCTAssertEqual(restored.weightUnit, .kg)
+        XCTAssertEqual(restored.workoutLog(for: monday).setProgress.first?.setEntries.first?.unit, .kg)
+    }
+
+    func testLastPerformanceSummaryConvertsToPreferredUnit() {
+        let state = LocalAppState(defaults: defaults)
+        let lastWeek = date(year: 2026, month: 5, day: 11)
+        let today = date(year: 2026, month: 5, day: 18)
+
+        state.updateSetEntry(exerciseID: "hip-thrust", setIndex: 0, weightText: "135", repsText: "10", date: lastWeek)
+        state.toggleSet(exerciseID: "hip-thrust", setIndex: 0, date: lastWeek)
+        state.weightUnit = .kg
+
+        XCTAssertEqual(state.lastPerformanceSummary(exerciseID: "hip-thrust", before: today), "61.2 kg x 10")
+    }
+
+    func testPreviousSetHintUsesSameSetFromLastSession() {
+        let state = LocalAppState(defaults: defaults)
+        let lastWeek = date(year: 2026, month: 5, day: 11)
+        let today = date(year: 2026, month: 5, day: 18)
+
+        state.updateSetEntry(exerciseID: "hip-thrust", setIndex: 0, weightText: "135", repsText: "10", date: lastWeek)
+        state.toggleSet(exerciseID: "hip-thrust", setIndex: 0, date: lastWeek)
+        state.updateSetEntry(exerciseID: "hip-thrust", setIndex: 1, weightText: "145", repsText: "8", date: lastWeek)
+        state.toggleSet(exerciseID: "hip-thrust", setIndex: 1, date: lastWeek)
+
+        let hint0 = state.previousSetHint(exerciseID: "hip-thrust", setIndex: 0, before: today)
+        let hint1 = state.previousSetHint(exerciseID: "hip-thrust", setIndex: 1, before: today)
+        let hint2 = state.previousSetHint(exerciseID: "hip-thrust", setIndex: 2, before: today)
+
+        XCTAssertEqual(hint0?.weightText, "135")
+        XCTAssertEqual(hint0?.repsText, "10")
+        XCTAssertEqual(hint1?.weightText, "145")
+        XCTAssertEqual(hint2?.weightText, "145", "Extra sets fall back to the last logged set")
+    }
+
+    func testCheckingEmptySetAdoptsPreviousHint() {
+        let state = LocalAppState(defaults: defaults)
+        let lastWeek = date(year: 2026, month: 5, day: 11)
+        let today = date(year: 2026, month: 5, day: 18)
+
+        state.updateSetEntry(exerciseID: "hip-thrust", setIndex: 0, weightText: "135", repsText: "10", date: lastWeek)
+        state.toggleSet(exerciseID: "hip-thrust", setIndex: 0, date: lastWeek)
+
+        state.toggleSet(exerciseID: "hip-thrust", setIndex: 0, date: today)
+
+        let entry = state.setEntry(exerciseID: "hip-thrust", setIndex: 0)
+        XCTAssertEqual(entry.weightText, "135")
+        XCTAssertEqual(entry.repsText, "10")
+        XCTAssertTrue(entry.isCompleted)
+    }
+
+    func testCheckingTypedSetKeepsTypedValues() {
+        let state = LocalAppState(defaults: defaults)
+        let lastWeek = date(year: 2026, month: 5, day: 11)
+        let today = date(year: 2026, month: 5, day: 18)
+
+        state.updateSetEntry(exerciseID: "hip-thrust", setIndex: 0, weightText: "135", repsText: "10", date: lastWeek)
+        state.toggleSet(exerciseID: "hip-thrust", setIndex: 0, date: lastWeek)
+
+        state.updateSetEntry(exerciseID: "hip-thrust", setIndex: 0, weightText: "140", repsText: "", date: today)
+        state.toggleSet(exerciseID: "hip-thrust", setIndex: 0, date: today)
+
+        let entry = state.setEntry(exerciseID: "hip-thrust", setIndex: 0)
+        XCTAssertEqual(entry.weightText, "140")
+        XCTAssertEqual(entry.repsText, "")
+    }
+
+    func testHintAdoptedInPreferredUnit() {
+        let state = LocalAppState(defaults: defaults)
+        let lastWeek = date(year: 2026, month: 5, day: 11)
+        let today = date(year: 2026, month: 5, day: 18)
+
+        state.updateSetEntry(exerciseID: "hip-thrust", setIndex: 0, weightText: "100", repsText: "10", date: lastWeek)
+        state.toggleSet(exerciseID: "hip-thrust", setIndex: 0, date: lastWeek)
+        state.weightUnit = .kg
+
+        XCTAssertEqual(state.previousSetHint(exerciseID: "hip-thrust", setIndex: 0, before: today)?.weightText, "45.4")
+        state.toggleSet(exerciseID: "hip-thrust", setIndex: 0, date: today)
+
+        let entry = state.setEntry(exerciseID: "hip-thrust", setIndex: 0)
+        XCTAssertEqual(entry.weightText, "45.4")
+        XCTAssertEqual(entry.unit, .kg)
     }
 
     func testWeeklyCheckInPersists() {
@@ -506,7 +683,7 @@ final class LocalAppStateTests: XCTestCase {
 
     func testSavedSnapshotDoesNotRoundTripLegacyTopLevelQuickProteinAdds() throws {
         let state = LocalAppState(defaults: defaults)
-        state.selectedDayOverride = .monday
+        state.weightUnit = .kg
 
         let data = try XCTUnwrap(defaults.data(forKey: storageKey))
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
@@ -516,7 +693,7 @@ final class LocalAppStateTests: XCTestCase {
 
     func testRestoreDoesNotRewriteSnapshotDuringInit() throws {
         let state = LocalAppState(defaults: defaults)
-        state.selectedDayOverride = .saturday
+        state.weightUnit = .kg
         state.setProgress = [SetProgress(exerciseID: "split-squat", completedSets: [0, 1])]
         state.selectedMealIDs = ["meal-1"]
         state.checkedGroceryItemIDs = ["spinach"]

@@ -107,8 +107,20 @@ final class WorkoutAppScaffoldTests: XCTestCase {
         XCTAssertTrue(planView.contains("selectedProgramPreview"))
         XCTAssertTrue(planView.contains("goalCard("))
         XCTAssertTrue(planView.contains("Plan preview"))
-        XCTAssertTrue(todayView.contains("currentGoalStatus"))
-        XCTAssertTrue(todayView.contains("Goal"))
+        XCTAssertTrue(todayView.contains("planSummaryCard"))
+        XCTAssertTrue(todayView.contains("selectedProgram.goal"))
+    }
+
+    func testTodayPutsWorkoutBeforePrepAheadAndUsesNeutralCopy() throws {
+        let todayView = try String(contentsOfFile: sourcePath("WorkoutApp/Features/Today/TodayView.swift"), encoding: .utf8)
+        let body = try XCTUnwrap(todayView.components(separatedBy: "var body: some View").dropFirst().first)
+
+        let header = try XCTUnwrap(body.range(of: "header(for: workout)"))
+        let prepAhead = try XCTUnwrap(body.range(of: "prepAheadSection"))
+        XCTAssertLessThan(header.lowerBound, prepAhead.lowerBound)
+        XCTAssertFalse(todayView.contains(" she "))
+        XCTAssertTrue(todayView.contains("workoutSwapMenu"))
+        XCTAssertTrue(todayView.contains("state.prepareDay(currentDate())"))
     }
 
     func testProgressDashboardShowsWeightLossMetrics() throws {

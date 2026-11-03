@@ -6,7 +6,9 @@ import Observation
 final class LocalAppState {
     private struct Snapshot: Codable {
         var selectedProgramID: String?
-        var selectedDayOverride: Weekday?
+        var dayOverrides: [String: Weekday]?
+        var loadedDateKey: String?
+        var weightUnit: WeightUnit?
         var setProgress: [SetProgress]
         var selectedMealIDs: Set<String>
         var checkedGroceryItemIDs: Set<String>
@@ -24,8 +26,12 @@ final class LocalAppState {
     @ObservationIgnored private var isRestoring = false
 
     var selectedProgramID: String { didSet { save() } }
-    var selectedDayOverride: Weekday? { didSet { save() } }
+    /// Workout swaps keyed by date ("yyyy-MM-dd"), so a swap never leaks into another day.
+    var dayOverrides: [String: Weekday] { didSet { save() } }
+    var weightUnit: WeightUnit { didSet { save() } }
+    /// Sets for the day in `loadedDateKey`. Always go through `prepareDay(_:)` before reading or writing for a date.
     var setProgress: [SetProgress] { didSet { save() } }
+    private(set) var loadedDateKey: String? { didSet { save() } }
     var selectedMealIDs: Set<String> { didSet { save() } }
     var checkedGroceryItemIDs: Set<String> { didSet { save() } }
     var foodLogs: [FoodLog] { didSet { save() } }
@@ -47,14 +53,16 @@ final class LocalAppState {
         selectedProgramID = id
         selectedMealIDs.removeAll()
         checkedGroceryItemIDs.removeAll()
-        setProgress = workoutLog(for: Date()).setProgress
+        loadDay(Date())
     }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         self.selectedProgramID = ProgramSeed.defaultProgramID
-        self.selectedDayOverride = nil
+        self.dayOverrides = [:]
+        self.weightUnit = .lb
         self.setProgress = []
+        self.loadedDateKey = nil
         self.selectedMealIDs = []
         self.checkedGroceryItemIDs = []
         self.foodLogs = []
@@ -64,6 +72,51 @@ final class LocalAppState {
         self.fitnessAssessments = []
         self.personalizedPrograms = []
         restore()
+    }
+
+    /// Swaps in the given day's own sets when the day changes. Safe to call repeatedly.
+    func prepareDay(_ date: Date) {
+        guard dateKey(for: date) != loadedDateKey else { return }
+        loadDay(date)
+    }
+
+    private func loadDay(_ date: Date) {
+        setProgress = workoutLog(for: date).setProgress
+        loadedDateKey = dateKey(for: date)
+    }
+
+    func workoutDayOverride(on date: Date) -> Weekday? {
+        dayOverrides[dateKey(for: date)]
+    }
+
+    /// Pass `nil` (or the date's own weekday) to go back to the normal schedule.
+    func setWorkoutDayOverride(_ weekday: Weekday?, date: Date) {
+        let key = dateKey(for: date)
+        if let weekday, weekday != Self.weekday(for: date) {
+            dayOverrides[key] = weekday
+        } else {
+            dayOverrides.removeValue(forKey: key)
+        }
+    }
+
+    func scheduledWorkout(on date: Date) -> WorkoutDay? {
+        WorkoutPlanner(schedule: selectedProgram.weeklySchedule)
+            .workout(for: Self.weekday(for: date), override: workoutDayOverride(on: date))
+    }
+
+    static func weekday(for date: Date, calendar: Calendar = .current) -> Weekday {
+        Weekday.allCases[calendar.component(.weekday, from: date) - 1]
+    }
+
+    func previousSetHint(exerciseID: String, setIndex: Int, before date: Date = Date()) -> SetEntry? {
+        WorkoutHistory.previousSetHint(
+            exerciseID: exerciseID,
+            setIndex: setIndex,
+            logs: workoutLogs,
+            programID: selectedProgramID,
+            beforeDateKey: dateKey(for: date),
+            unit: weightUnit
+        )
     }
 
     func progress(for exerciseID: String) -> SetProgress {
@@ -78,21 +131,23 @@ final class LocalAppState {
     }
 
     func toggleSet(exerciseID: String, setIndex: Int, date: Date) {
-        let index = setProgress.firstIndex { $0.exerciseID == exerciseID }
-        if let index {
-            if setProgress[index].completedSets.contains(setIndex) {
-                setProgress[index].completedSets.remove(setIndex)
-            } else {
-                setProgress[index].completedSets.insert(setIndex)
-            }
-            syncSetEntryCompletion(exerciseProgressIndex: index, setIndex: setIndex)
-        } else {
-            setProgress.append(SetProgress(
-                exerciseID: exerciseID,
-                completedSets: [setIndex],
-                setEntries: [SetEntry(setIndex: setIndex, isCompleted: true)]
-            ))
+        prepareDay(date)
+        let index = ensureProgressIndex(for: exerciseID)
+        var entry = setProgress[index].setEntries.first { $0.setIndex == setIndex } ?? SetEntry(setIndex: setIndex)
+        let isCompleting = !setProgress[index].completedSets.contains(setIndex)
+        entry.isCompleted = isCompleting
+
+        // Checking off an untouched set logs what was shown as the hint (last time's numbers).
+        if isCompleting,
+           entry.weightText.trimmingCharacters(in: .whitespaces).isEmpty,
+           entry.repsText.trimmingCharacters(in: .whitespaces).isEmpty,
+           let hint = previousSetHint(exerciseID: exerciseID, setIndex: setIndex, before: date) {
+            entry.weightText = hint.weightText
+            entry.repsText = hint.repsText
+            entry.unit = weightUnit
         }
+
+        upsertSetEntry(entry, exerciseProgressIndex: index)
         upsertWorkoutLog(for: date)
     }
 
@@ -101,13 +156,15 @@ final class LocalAppState {
     }
 
     func updateSetEntry(exerciseID: String, setIndex: Int, weightText: String, repsText: String, date: Date = Date()) {
+        prepareDay(date)
         let progressIndex = ensureProgressIndex(for: exerciseID)
         let existingCompletion = setProgress[progressIndex].completedSets.contains(setIndex)
         let entry = SetEntry(
             setIndex: setIndex,
             weightText: weightText,
             repsText: repsText,
-            isCompleted: existingCompletion
+            isCompleted: existingCompletion,
+            unit: weightUnit
         )
         upsertSetEntry(entry, exerciseProgressIndex: progressIndex)
         upsertWorkoutLog(for: date)
@@ -143,21 +200,13 @@ final class LocalAppState {
     }
 
     func lastPerformanceSummary(exerciseID: String, before date: Date = Date()) -> String? {
-        let key = dateKey(for: date)
-        let previousLogs = workoutLogs
-            .filter { $0.programID == selectedProgramID && $0.dateKey < key }
-            .sorted { $0.dateKey > $1.dateKey }
-
-        for log in previousLogs {
-            guard let progress = log.setProgress.first(where: { $0.exerciseID == exerciseID }) else { continue }
-            let completedEntries = progress.setEntries
-                .filter { $0.isCompleted && !$0.weightText.isEmpty && !$0.repsText.isEmpty }
-                .sorted { $0.setIndex < $1.setIndex }
-            guard let firstWeight = completedEntries.first?.weightText, !completedEntries.isEmpty else { continue }
-            let reps = completedEntries.map(\.repsText).joined(separator: ", ")
-            return "\(firstWeight) lb x \(reps)"
-        }
-        return nil
+        WorkoutHistory.lastPerformanceSummary(
+            exerciseID: exerciseID,
+            logs: workoutLogs,
+            programID: selectedProgramID,
+            beforeDateKey: dateKey(for: date),
+            unit: weightUnit
+        )
     }
 
     func weeklyCheckIn(for date: Date) -> WeeklyCheckIn {
@@ -258,7 +307,7 @@ final class LocalAppState {
         selectedProgramID = baseProgramID
         selectedMealIDs.removeAll()
         checkedGroceryItemIDs.removeAll()
-        setProgress = workoutLog(for: startDate).setProgress
+        loadDay(startDate)
     }
 
     func recordFitnessRetest(
@@ -299,7 +348,7 @@ final class LocalAppState {
         selectedProgramID = baseProgramID
         selectedMealIDs.removeAll()
         checkedGroceryItemIDs.removeAll()
-        setProgress = workoutLog(for: date).setProgress
+        loadDay(date)
     }
 
     private func restore() {
@@ -311,8 +360,11 @@ final class LocalAppState {
         defer { isRestoring = false }
 
         selectedProgramID = snapshot.selectedProgramID ?? ProgramSeed.defaultProgramID
-        selectedDayOverride = snapshot.selectedDayOverride
+        dayOverrides = snapshot.dayOverrides ?? [:]
+        weightUnit = snapshot.weightUnit ?? .lb
         setProgress = snapshot.setProgress
+        // Snapshots saved before this field existed have nil, so the next prepareDay reloads from the day's log.
+        loadedDateKey = snapshot.loadedDateKey
         selectedMealIDs = snapshot.selectedMealIDs
         checkedGroceryItemIDs = snapshot.checkedGroceryItemIDs
         foodLogs = snapshot.foodLogs ?? []
@@ -328,7 +380,9 @@ final class LocalAppState {
 
         let snapshot = Snapshot(
             selectedProgramID: selectedProgramID,
-            selectedDayOverride: selectedDayOverride,
+            dayOverrides: dayOverrides,
+            loadedDateKey: loadedDateKey,
+            weightUnit: weightUnit,
             setProgress: setProgress,
             selectedMealIDs: selectedMealIDs,
             checkedGroceryItemIDs: checkedGroceryItemIDs,
@@ -435,12 +489,6 @@ final class LocalAppState {
         }
         setProgress.append(SetProgress(exerciseID: exerciseID))
         return setProgress.count - 1
-    }
-
-    private func syncSetEntryCompletion(exerciseProgressIndex: Int, setIndex: Int) {
-        var entry = setProgress[exerciseProgressIndex].setEntries.first { $0.setIndex == setIndex } ?? SetEntry(setIndex: setIndex)
-        entry.isCompleted = setProgress[exerciseProgressIndex].completedSets.contains(setIndex)
-        upsertSetEntry(entry, exerciseProgressIndex: exerciseProgressIndex)
     }
 
     private func upsertSetEntry(_ entry: SetEntry, exerciseProgressIndex: Int) {

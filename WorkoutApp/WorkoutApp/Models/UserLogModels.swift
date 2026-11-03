@@ -6,12 +6,15 @@ struct SetEntry: Identifiable, Hashable, Codable {
     var weightText: String
     var repsText: String
     var isCompleted: Bool
+    /// Unit the weight was typed in. `nil` means pounds (entries saved before units existed).
+    var unit: WeightUnit?
 
-    init(setIndex: Int, weightText: String = "", repsText: String = "", isCompleted: Bool = false) {
+    init(setIndex: Int, weightText: String = "", repsText: String = "", isCompleted: Bool = false, unit: WeightUnit? = nil) {
         self.setIndex = setIndex
         self.weightText = weightText
         self.repsText = repsText
         self.isCompleted = isCompleted
+        self.unit = unit
     }
 }
 

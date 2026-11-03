@@ -13,6 +13,7 @@ struct TodayView: View {
     @State private var manuallyExpandedExerciseIDs: Set<String> = []
     @State private var manuallyCollapsedExerciseIDs: Set<String> = []
     @State private var lastActiveExerciseID: String?
+    @Environment(\.scenePhase) private var scenePhase
 
     private var selectedProgram: TrainingProgram {
         state.selectedProgram
@@ -26,12 +27,9 @@ struct TodayView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    let workout = planner.workout(for: currentWeekday(), override: state.selectedDayOverride) ?? selectedProgram.weeklySchedule[1]
-                    brandBanner
-                    currentPlanLabel
-                    currentGoalStatus
+                    let workout = state.scheduledWorkout(on: currentDate()) ?? selectedProgram.weeklySchedule[1]
                     retestPromptSection
-                    prepAheadSection
+                    planSummaryCard
                     header(for: workout)
 
                     if workout.isRestDay {
@@ -56,55 +54,30 @@ struct TodayView: View {
                             updateActiveExercise(newActiveExerciseID)
                         }
                     }
+
+                    prepAheadSection
                 }
                 .padding()
             }
             .background(AppTheme.screenBackground)
             .navigationTitle("Today")
+            .onAppear { state.prepareDay(currentDate()) }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active {
+                    state.prepareDay(currentDate())
+                }
+            }
         }
     }
 
-    private var brandBanner: some View {
-        Image("BrandWordmark")
-            .resizable()
-            .scaledToFit()
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .frame(maxWidth: .infinity)
-            .background(AppTheme.brandBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .accessibilityLabel("I'd Lift That")
-    }
-
-    private var currentPlanLabel: some View {
-        HStack(spacing: 8) {
+    private var planSummaryCard: some View {
+        HStack(alignment: .top, spacing: 10) {
             Image(systemName: "target")
                 .foregroundStyle(AppTheme.accent)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Current plan")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                Text(state.selectedProgram.name)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(selectedProgram.name)
                     .font(.subheadline.weight(.semibold))
-            }
-            Spacer()
-        }
-        .padding()
-        .background(AppTheme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    private var currentGoalStatus: some View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: "chart.line.uptrend.xyaxis")
-                .foregroundStyle(AppTheme.accent)
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Goal")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                Text(state.selectedProgram.goal)
-                    .font(.subheadline.weight(.semibold))
-                Text("\(activeTrainingDays(in: selectedProgram)) training days | \(selectedProgram.nutritionTargets.proteinGrams)g protein target")
+                Text("\(selectedProgram.goal) | \(activeTrainingDays(in: selectedProgram)) training days | \(selectedProgram.nutritionTargets.proteinGrams)g protein")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 if let personalizedProgram = currentPersonalizedProgram {
@@ -115,9 +88,10 @@ struct TodayView: View {
             }
             Spacer()
         }
-        .padding()
+        .padding(12)
         .background(AppTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .combine)
     }
 
     @ViewBuilder
@@ -151,9 +125,12 @@ struct TodayView: View {
 
     private var prepAheadSection: some View {
         let futureDate = prepAheadDate(offset: selectedPrepAheadOffset)
-        let futureWorkout = planner.workout(for: futureDate) ?? selectedProgram.weeklySchedule[1]
+        let futureWorkout = state.scheduledWorkout(on: futureDate) ?? selectedProgram.weeklySchedule[1]
 
         return VStack(alignment: .leading, spacing: 10) {
+            Text("Prep ahead")
+                .font(.title3.bold())
+                .padding(.top, 8)
             HStack {
                 Text("Choose day")
                     .font(.subheadline.weight(.semibold))
@@ -221,6 +198,8 @@ struct TodayView: View {
                 .font(.largeTitle.bold())
             Text(workout.subtitle)
                 .foregroundStyle(.secondary)
+            workoutSwapMenu(current: workout)
+                .padding(.top, 4)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
@@ -228,16 +207,39 @@ struct TodayView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
+    private func workoutSwapMenu(current workout: WorkoutDay) -> some View {
+        let today = currentDate()
+        let normalDay = LocalAppState.weekday(for: today)
+        let isSwapped = state.workoutDayOverride(on: today) != nil
+
+        return Menu {
+            if isSwapped {
+                Button("Back to today's planned workout") {
+                    state.setWorkoutDayOverride(nil, date: today)
+                }
+            }
+            ForEach(selectedProgram.weeklySchedule.filter { !$0.isRestDay && $0.id != workout.id }) { day in
+                Button("\(day.name) (\(day.id.rawValue.capitalized))") {
+                    state.setWorkoutDayOverride(day.id == normalDay ? nil : day.id, date: today)
+                }
+            }
+        } label: {
+            Label(isSwapped ? "Swapped for today. Change" : "Doing a different workout today?", systemImage: "arrow.left.arrow.right")
+                .font(.footnote.weight(.semibold))
+        }
+        .tint(AppTheme.accent)
+    }
+
     private func finishSummary(for workout: WorkoutDay) -> some View {
         let log = state.workoutLog(for: currentDate())
-        let summary = WorkoutPlanner.summary(for: workout, log: log)
+        let summary = WorkoutPlanner.summary(for: workout, log: log, unit: state.weightUnit)
 
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(summary.isFinished ? "Workout finished" : "Finish workout")
                         .font(.headline)
-                    Text("\(summary.completedSets)/\(summary.totalSets) sets | \(formatVolume(summary.totalVolume)) lb volume")
+                    Text("\(summary.completedSets)/\(summary.totalSets) sets | \(formatVolume(summary.totalVolume)) \(state.weightUnit.symbol) volume")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -248,7 +250,7 @@ struct TodayView: View {
             }
 
             if summary.remainingSets > 0 {
-                Text("\(summary.remainingSets) sets left if she wants the full plan today.")
+                Text("\(summary.remainingSets) sets left for the full plan today.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             } else {
@@ -306,11 +308,6 @@ struct TodayView: View {
         if let activeExerciseID {
             manuallyCollapsedExerciseIDs.remove(activeExerciseID)
         }
-    }
-
-    private func currentWeekday() -> Weekday {
-        let weekday = Calendar.current.component(.weekday, from: currentDate())
-        return Weekday.allCases[weekday - 1]
     }
 
     private func activeTrainingDays(in program: TrainingProgram) -> Int {
