@@ -2,10 +2,13 @@
 
 ## Latest Session
 
-- **2026-11-03 (Session 10)** -> [2026-11-03__session-10.md](2026-11-03__session-10.md)
-  - Fixed gym-day issues: per-day set reset, background-safe rest timer with notification, Today layout, per-date workout swaps, kg/lb, last-time hints.
+- **2026-11-03 (Session 11)** -> [2026-11-03__session-11.md](2026-11-03__session-11.md)
+  - Verified Xcode recommended-settings changes: simulator build passed and all 109 tests passed; no app/project edits needed.
 
 ## Previous Sessions
+
+- **2026-11-03 (Session 10)** -> [2026-11-03__session-10.md](2026-11-03__session-10.md)
+  - Fixed gym-day issues: per-day set reset, background-safe rest timer with notification, Today layout, per-date workout swaps, kg/lb, last-time hints.
 
 - **2026-05-25 (Session 09)** -> [2026-05-25__session-09.md](2026-05-25__session-09.md)
   - Replaced generated YouTube search demo links with curated MuscleWiki exercise-guide URLs.

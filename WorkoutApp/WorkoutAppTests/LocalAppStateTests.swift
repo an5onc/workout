@@ -234,6 +234,39 @@ final class LocalAppStateTests: XCTestCase {
         XCTAssertEqual(restored.scheduledWorkout(on: tuesday)?.id, .tuesday)
     }
 
+    func testSwappedDayShowsChosenWorkoutsDemoLinks() throws {
+        let state = LocalAppState(defaults: defaults)
+        let tuesday = date(year: 2026, month: 5, day: 12)
+        let schedule = state.selectedProgram.weeklySchedule
+        let monday = try XCTUnwrap(schedule.first { $0.id == .monday })
+        let plannedTuesday = try XCTUnwrap(schedule.first { $0.id == .tuesday })
+
+        state.setWorkoutDayOverride(.monday, date: tuesday)
+        let shown = try XCTUnwrap(state.scheduledWorkout(on: tuesday))
+
+        XCTAssertEqual(shown.exercises.map(\.id), monday.exercises.map(\.id))
+        XCTAssertFalse(shown.exercises.isEmpty)
+        for (shownExercise, chosenExercise) in zip(shown.exercises, monday.exercises) {
+            XCTAssertEqual(shownExercise.demoURL, chosenExercise.demoURL, shownExercise.name)
+            XCTAssertEqual(
+                shownExercise.substitutions.map(\.demoURL),
+                chosenExercise.substitutions.map(\.demoURL),
+                "\(shownExercise.name) substitutions"
+            )
+        }
+
+        let shownLinks = Set(shown.exercises.compactMap(\.demoURL))
+        let plannedTuesdayLinks = Set(plannedTuesday.exercises.compactMap(\.demoURL))
+        XCTAssertTrue(shownLinks.isDisjoint(with: plannedTuesdayLinks), "No demo from the replaced workout should remain")
+
+        let allLinks = shown.exercises.flatMap { [$0.demoURL] + $0.substitutions.map(\.demoURL) }.compactMap { $0 }
+        XCTAssertFalse(allLinks.isEmpty)
+        for url in allLinks {
+            XCTAssertEqual(url.host(), "musclewiki.com", url.absoluteString)
+            XCTAssertFalse(url.absoluteString.localizedCaseInsensitiveContains("youtube"), url.absoluteString)
+        }
+    }
+
     func testChoosingTheNormalDayClearsOverride() {
         let state = LocalAppState(defaults: defaults)
         let tuesday = date(year: 2026, month: 5, day: 12)
