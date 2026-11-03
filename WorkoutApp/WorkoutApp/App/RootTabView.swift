@@ -96,7 +96,7 @@ struct ProgressDashboardView: View {
                     workoutLogs: state.workoutLogs
                 )
 
-                metricRow("Body weight trend", value: trendText(bodyWeightChange, unit: "lb"))
+                metricRow("Body weight trend", value: trendText(bodyWeightChange, unit: state.weightUnit.symbol))
                 metricRow("Waist trend", value: trendText(waistChange, unit: "in"))
                 metricRow("Weekly adherence", value: "\(adherence.completedTrainingDays)/\(adherence.plannedTrainingDays) days")
                 metricRow("Walking/cardio", value: "\(adherence.completedCardioDays)/\(adherence.plannedCardioDays) days")
@@ -112,7 +112,7 @@ struct ProgressDashboardView: View {
             } else {
                 ForEach(recentWorkoutLogs) { log in
                     let workout = workoutForLog(log)
-                    let summary = workout.map { WorkoutPlanner.summary(for: $0, log: log) }
+                    let summary = workout.map { WorkoutPlanner.summary(for: $0, log: log, unit: state.weightUnit) }
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Text(log.dateKey)
@@ -178,7 +178,7 @@ struct ProgressDashboardView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(exerciseName(for: record.exerciseID))
                                 .font(.headline)
-                            Text("Best: \(record.weight) lb x \(record.reps)")
+                            Text("Best: \(record.weight) \(state.weightUnit.symbol) x \(record.reps)")
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -263,21 +263,8 @@ struct ProgressDashboardView: View {
     }
 
     private func exerciseRecords() -> [(exerciseID: String, weight: String, reps: String)] {
-        var records: [String: (weight: Double, reps: Int)] = [:]
-        for log in state.workoutLogs where log.programID == state.selectedProgram.id {
-            for progress in log.setProgress {
-                for entry in progress.setEntries where entry.isCompleted {
-                    guard let weight = Double(entry.weightText), let reps = Int(entry.repsText) else { continue }
-                    let existing = records[progress.exerciseID]
-                    if existing == nil || weight > existing!.weight || (weight == existing!.weight && reps > existing!.reps) {
-                        records[progress.exerciseID] = (weight, reps)
-                    }
-                }
-            }
-        }
-        return records
-            .sorted { $0.key < $1.key }
-            .map { (exerciseID: $0.key, weight: formatWeight($0.value.weight), reps: "\($0.value.reps)") }
+        WorkoutHistory.bestLifts(logs: state.workoutLogs, programID: state.selectedProgram.id, unit: state.weightUnit)
+            .map { (exerciseID: $0.exerciseID, weight: formatWeight($0.weight), reps: "\($0.reps)") }
     }
 
     private func exerciseSessions(for exerciseID: String) -> [(dateKey: String, summary: String)] {
@@ -285,16 +272,11 @@ struct ProgressDashboardView: View {
             .filter { $0.programID == state.selectedProgram.id }
             .sorted { $0.dateKey > $1.dateKey }
             .compactMap { log in
-                guard let progress = log.setProgress.first(where: { $0.exerciseID == exerciseID }) else {
+                guard let progress = log.setProgress.first(where: { $0.exerciseID == exerciseID }),
+                      let summary = WorkoutHistory.sessionSummary(for: progress, unit: state.weightUnit) else {
                     return nil
                 }
-                let entries = progress.setEntries
-                    .filter { $0.isCompleted && !$0.weightText.isEmpty && !$0.repsText.isEmpty }
-                    .sorted { $0.setIndex < $1.setIndex }
-                guard !entries.isEmpty else { return nil }
-                let firstWeight = entries.first?.weightText ?? ""
-                let reps = entries.map(\.repsText).joined(separator: ", ")
-                return (dateKey: log.dateKey, summary: "\(firstWeight) lb x \(reps)")
+                return (dateKey: log.dateKey, summary: summary)
             }
     }
 
@@ -321,15 +303,14 @@ struct ProgressDashboardView: View {
         guard let date = Self.dateKeyFormatter.date(from: log.dateKey) else {
             return nil
         }
-        let weekday = Calendar.current.component(.weekday, from: date)
-        return state.selectedProgram.weeklySchedule.first { $0.id == Weekday.allCases[weekday - 1] }
+        return state.scheduledWorkout(on: date)
     }
 
     private func summaryText(for summary: WorkoutSummary?, fallbackLog log: WorkoutLog) -> String {
         guard let summary else {
             return "\(completedSetCount(in: log)) completed sets"
         }
-        return "\(summary.completedSets)/\(summary.totalSets) sets | \(formatWeight(summary.totalVolume)) lb volume"
+        return "\(summary.completedSets)/\(summary.totalSets) sets | \(formatWeight(summary.totalVolume)) \(state.weightUnit.symbol) volume"
     }
 
     private func metricRow(_ title: String, value: String) -> some View {
@@ -350,7 +331,7 @@ struct ProgressDashboardView: View {
     }
 
     private func formatWeight(_ weight: Double) -> String {
-        weight.rounded() == weight ? String(Int(weight)) : String(format: "%.1f", weight)
+        WeightFormatter.string(weight)
     }
 
     private func display(_ value: String) -> String {

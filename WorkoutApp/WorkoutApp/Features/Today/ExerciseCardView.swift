@@ -6,9 +6,10 @@ struct ExerciseCardView: View {
     let state: LocalAppState
     var currentDate: () -> Date = Date.init
 
-    @State private var remainingRestSeconds = 0
-    @State private var isRestTimerRunning = false
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    @State private var restTimer = RestTimer()
+    @State private var now = Date()
+    @State private var restFinishedCount = 0
+    private let ticker = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         let progress = state.progress(for: exercise.id)
@@ -22,17 +23,18 @@ struct ExerciseCardView: View {
                 VStack(spacing: 8) {
                     ForEach(0..<exercise.sets, id: \.self) { setIndex in
                         let isCompleted = completedSets.contains(setIndex)
+                        let hint = state.previousSetHint(exerciseID: exercise.id, setIndex: setIndex, before: currentDate())
 
                         HStack(spacing: 8) {
                             Text("Set \(setIndex + 1)")
                                 .font(.subheadline.weight(.semibold))
                                 .frame(width: 48, alignment: .leading)
 
-                            TextField("lb", text: weightBinding(for: setIndex))
+                            TextField(hint?.weightText ?? state.weightUnit.symbol, text: weightBinding(for: setIndex))
                                 .keyboardType(.decimalPad)
                                 .workoutTextField()
 
-                            TextField("reps", text: repsBinding(for: setIndex))
+                            TextField(hint?.repsText ?? "reps", text: repsBinding(for: setIndex))
                                 .keyboardType(.numberPad)
                                 .workoutTextField()
 
@@ -69,14 +71,15 @@ struct ExerciseCardView: View {
                 Text(exercise.feel).font(.footnote).foregroundStyle(.secondary)
             }
             .padding(.top, 8)
-            .onReceive(timer) { _ in
-                guard isRestTimerRunning else { return }
-                if remainingRestSeconds > 0 {
-                    remainingRestSeconds -= 1
-                } else {
-                    isRestTimerRunning = false
+            .onReceive(ticker) { tick in
+                guard restTimer.isRunning else { return }
+                now = tick
+                if restTimer.isFinished(at: tick) {
+                    restTimer.reset()
+                    restFinishedCount += 1
                 }
             }
+            .sensoryFeedback(.success, trigger: restFinishedCount)
         } label: {
             VStack(alignment: .leading, spacing: 4) {
                 Text(exercise.name).font(.headline)
@@ -101,7 +104,7 @@ struct ExerciseCardView: View {
                     .foregroundStyle(.secondary)
             }
 
-            Text(WorkoutProgressAdvisor.suggestion(for: exercise, progress: progress))
+            Text(WorkoutProgressAdvisor.suggestion(for: exercise, progress: progress, unit: state.weightUnit))
                 .font(.footnote)
                 .foregroundStyle(AppTheme.accent)
         }
@@ -168,46 +171,51 @@ struct ExerciseCardView: View {
         HStack {
             Label(restTimerLabel, systemImage: "timer")
                 .font(.subheadline.weight(.semibold))
+                .monospacedDigit()
             Spacer()
-            Button(isRestTimerRunning ? "Pause" : "Start") {
-                if remainingRestSeconds == 0 {
-                    remainingRestSeconds = restSeconds
+            Button(restTimer.isRunning ? "Pause" : "Start") {
+                let current = Date()
+                now = current
+                if restTimer.isRunning {
+                    restTimer.pause(now: current)
+                    RestTimerNotifier.cancel()
+                } else {
+                    restTimer.resume(defaultSeconds: restSeconds, now: current)
+                    RestTimerNotifier.schedule(exerciseName: exercise.name, after: restTimer.remainingSeconds(at: current))
                 }
-                isRestTimerRunning.toggle()
             }
             .buttonStyle(.bordered)
 
             Button("Reset") {
-                remainingRestSeconds = restSeconds
-                isRestTimerRunning = false
+                restTimer.reset()
+                RestTimerNotifier.cancel()
             }
             .buttonStyle(.bordered)
         }
     }
 
     private var restTimerLabel: String {
-        guard remainingRestSeconds > 0 else {
+        let remaining = restTimer.remainingSeconds(at: now)
+        guard remaining > 0 else {
             return "Rest \(exercise.rest)"
         }
-        return "\(remainingRestSeconds / 60):\(String(format: "%02d", remainingRestSeconds % 60))"
+        return "\(remaining / 60):\(String(format: "%02d", remaining % 60))"
     }
 
     private var restSeconds: Int {
-        let matches = exercise.rest.matches(of: /\d+/)
-        guard let first = matches.first, let value = Int(first.output) else {
-            return 60
-        }
-        return exercise.rest.localizedCaseInsensitiveContains("minute") ? value * 60 : value
+        RestTimer.seconds(fromRestText: exercise.rest)
     }
 
     private func startRestTimer() {
-        remainingRestSeconds = restSeconds
-        isRestTimerRunning = true
+        let current = Date()
+        now = current
+        restTimer.start(seconds: restSeconds, now: current)
+        RestTimerNotifier.schedule(exerciseName: exercise.name, after: restSeconds)
     }
 
     private func weightBinding(for setIndex: Int) -> Binding<String> {
         Binding {
-            state.setEntry(exerciseID: exercise.id, setIndex: setIndex).weightText
+            state.setEntry(exerciseID: exercise.id, setIndex: setIndex).displayWeightText(in: state.weightUnit)
         } set: { newValue in
             let entry = state.setEntry(exerciseID: exercise.id, setIndex: setIndex)
             state.updateSetEntry(exerciseID: exercise.id, setIndex: setIndex, weightText: newValue, repsText: entry.repsText, date: currentDate())
@@ -219,7 +227,7 @@ struct ExerciseCardView: View {
             state.setEntry(exerciseID: exercise.id, setIndex: setIndex).repsText
         } set: { newValue in
             let entry = state.setEntry(exerciseID: exercise.id, setIndex: setIndex)
-            state.updateSetEntry(exerciseID: exercise.id, setIndex: setIndex, weightText: entry.weightText, repsText: newValue, date: currentDate())
+            state.updateSetEntry(exerciseID: exercise.id, setIndex: setIndex, weightText: entry.displayWeightText(in: state.weightUnit), repsText: newValue, date: currentDate())
         }
     }
 }

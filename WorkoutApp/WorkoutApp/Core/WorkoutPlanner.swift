@@ -29,7 +29,7 @@ struct WorkoutPlanner {
         return nil
     }
 
-    static func summary(for workout: WorkoutDay, log: WorkoutLog) -> WorkoutSummary {
+    static func summary(for workout: WorkoutDay, log: WorkoutLog, unit: WeightUnit = .lb) -> WorkoutSummary {
         let totalSets = workout.exercises.reduce(0) { $0 + $1.sets }
         var completedSets = 0
         var totalVolume = 0.0
@@ -51,8 +51,7 @@ struct WorkoutPlanner {
             }
 
             for entry in completedEntries {
-                guard let weight = Double(entry.weightText.trimmingCharacters(in: .whitespacesAndNewlines)),
-                      let reps = Int(entry.repsText.trimmingCharacters(in: .whitespacesAndNewlines)) else {
+                guard let weight = entry.weight(in: unit), let reps = entry.repsValue else {
                     continue
                 }
                 totalVolume += weight * Double(reps)
@@ -69,7 +68,7 @@ struct WorkoutPlanner {
 }
 
 enum WorkoutProgressAdvisor {
-    static func suggestion(for exercise: Exercise, progress: SetProgress?) -> String {
+    static func suggestion(for exercise: Exercise, progress: SetProgress?, unit: WeightUnit = .lb) -> String {
         guard let progress else {
             return "Start with a controlled first set."
         }
@@ -78,15 +77,15 @@ enum WorkoutProgressAdvisor {
             .filter { $0.isCompleted }
             .sorted { $0.setIndex < $1.setIndex }
         guard completedEntries.count >= exercise.sets,
-              let workingWeight = completedEntries.compactMap({ numericValue($0.weightText) }).max() else {
-            if let latestWeight = completedEntries.compactMap({ numericValue($0.weightText) }).last {
-                return "Next time: repeat \(formatWeight(latestWeight)) lb."
+              let workingWeight = completedEntries.compactMap({ $0.weight(in: unit) }).max() else {
+            if let latestWeight = completedEntries.compactMap({ $0.weight(in: unit) }).last {
+                return "Next time: repeat \(formatWeight(latestWeight)) \(unit.symbol)."
             }
             return "Log weight and reps to get a next-time target."
         }
 
         guard let topRepTarget = topRepTarget(from: exercise.repRange) else {
-            return "Next time: repeat \(formatWeight(workingWeight)) lb."
+            return "Next time: repeat \(formatWeight(workingWeight)) \(unit.symbol)."
         }
 
         let clearedTopRange = completedEntries.allSatisfy { entry in
@@ -97,10 +96,10 @@ enum WorkoutProgressAdvisor {
         }
 
         if clearedTopRange {
-            return "Next time: try \(formatWeight(workingWeight + increment(for: workingWeight))) lb."
+            return "Next time: try \(formatWeight(workingWeight + increment(for: workingWeight, unit: unit))) \(unit.symbol)."
         }
 
-        return "Next time: repeat \(formatWeight(workingWeight)) lb."
+        return "Next time: repeat \(formatWeight(workingWeight)) \(unit.symbol)."
     }
 
     private static func topRepTarget(from repRange: String) -> Int? {
@@ -108,18 +107,16 @@ enum WorkoutProgressAdvisor {
         return matches.compactMap { Int($0.output) }.max()
     }
 
-    private static func numericValue(_ text: String) -> Double? {
-        Double(text.trimmingCharacters(in: .whitespacesAndNewlines))
-    }
-
-    private static func increment(for weight: Double) -> Double {
-        weight >= 100 ? 5 : 2.5
+    private static func increment(for weight: Double, unit: WeightUnit) -> Double {
+        switch unit {
+        case .lb:
+            return weight >= 100 ? 5 : 2.5
+        case .kg:
+            return weight >= 45 ? 2.5 : 1
+        }
     }
 
     private static func formatWeight(_ weight: Double) -> String {
-        if weight.rounded() == weight {
-            return String(Int(weight))
-        }
-        return String(format: "%.1f", weight)
+        WeightFormatter.string(weight)
     }
 }
